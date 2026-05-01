@@ -1,0 +1,7 @@
+.claude/
+frontend/node_modules/
+frontend/.angular/
+frontend/dist/
+backend/vendor/
+backend/var/
+backend/.env.local

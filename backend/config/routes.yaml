@@ -1,0 +1,11 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+# Route nécessaire pour que le RouterListener laisse passer la requête jusqu'au FirewallListener
+# Le contrôleur n'est jamais appelé : json_login intercepte en amont via kernel.request
+api_auth_login:
+    path: /api/auth/login
+    methods: [POST]
