@@ -1,0 +1,369 @@
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { ReceptionService, ReceptionPayload } from '../../../core/services/reception.service';
+import { ArticleService } from '../../../core/services/article.service';
+import { EmplacementService } from '../../../core/services/emplacement.service';
+import { TiersService } from '../../../core/services/tiers.service';
+import { Reception } from '../../../core/models/reception.model';
+import { Article } from '../../../core/models/article.model';
+import { Emplacement } from '../../../core/models/emplacement.model';
+import { Tiers } from '../../../core/models/tiers.model';
+
+@Component({
+  selector: 'app-receptions-list',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  template: `
+    <div class="page-header">
+      <h1>Réceptions</h1>
+      <button class="btn btn-primary" (click)="openCreate()">+ Nouvelle réception</button>
+    </div>
+
+    @if (error()) {
+      <div class="alert-error">{{ error() }}</div>
+    }
+
+    <div class="table-wrap">
+      @if (loading()) {
+        <div class="state-loading">
+          <div class="state-loading-spinner"></div>
+          <span>Chargement des réceptions…</span>
+        </div>
+      } @else if (receptions().length === 0) {
+        <div class="state-empty">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+          </svg>
+          <p class="state-empty-title">Aucune réception</p>
+          <p class="state-empty-sub">Enregistrez vos premières réceptions de marchandises.</p>
+        </div>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Fournisseur / Tiers</th>
+              <th>Statut</th>
+              <th>Lignes</th>
+              <th>Créée par</th>
+              <th style="width:160px">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of receptions(); track r.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="[r.id]" style="font-weight:600;color:var(--primary)">#{{ r.id }}</a>
+                </td>
+                <td>{{ r.dateReception | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  @if (r.tiers) {
+                    <span style="font-weight:500">{{ r.tiers.nom }}</span>
+                    <span style="font-size:.75rem;color:#64748b;margin-left:4px">({{ r.tiers.type }})</span>
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td>
+                  <span class="badge" [class]="badgeClass(r.statut)">{{ r.statut }}</span>
+                </td>
+                <td>{{ r.nbLignes }} ligne{{ (r.nbLignes ?? 0) > 1 ? 's' : '' }}</td>
+                <td style="font-size:.8rem;color:#475569">{{ r.utilisateur.email }}</td>
+                <td>
+                  <div style="display:flex;gap:4px;flex-wrap:wrap">
+                    @if (r.statut === 'EN_ATTENTE') {
+                      <button class="btn btn-success btn-sm" (click)="valider(r)" title="Valider">✓ Valider</button>
+                      <button class="btn btn-secondary btn-sm" (click)="annuler(r)" title="Annuler">✕</button>
+                    }
+                    @if (r.statut !== 'VALIDEE') {
+                      <button class="btn btn-danger btn-sm" (click)="delete(r)">Suppr.</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    @if (showForm()) {
+      <div class="modal-overlay" (click)="closeForm()">
+        <div class="modal modal-wide" (click)="$event.stopPropagation()" style="max-width:860px">
+          <h2>Nouvelle réception</h2>
+          <form [formGroup]="form" (ngSubmit)="submit()">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div class="form-group" style="margin:0">
+                <label>Fournisseur / Tiers</label>
+                <select formControlName="tiersId">
+                  <option value="">— Aucun tiers —</option>
+                  @for (t of tiers(); track t.id) {
+                    <option [value]="t.id">{{ t.nom }} ({{ t.type }})</option>
+                  }
+                </select>
+              </div>
+              <div class="form-group" style="margin:0">
+                <label>Date de réception</label>
+                <input type="date" formControlName="dateReception"
+                       [class.invalid]="form.get('dateReception')!.invalid && form.get('dateReception')!.touched">
+              </div>
+            </div>
+
+            <div class="lignes-section" formArrayName="lignes">
+              <div class="ligne-header">
+                <span>Lignes de réception</span>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="addLigne()">+ Ligne</button>
+              </div>
+
+              @for (lg of lignes.controls; track $index) {
+                <div [formGroupName]="$index" style="border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px">
+                  <div style="display:grid;grid-template-columns:1fr 1fr 80px 32px;gap:8px;align-items:end">
+                    <div class="form-group" style="margin:0">
+                      <label>Article</label>
+                      <select formControlName="articleId"
+                              (change)="onArticleChange($index)"
+                              [class.invalid]="lg.get('articleId')!.invalid && lg.get('articleId')!.touched">
+                        <option value="">— Article —</option>
+                        @for (a of articles(); track a.id) {
+                          <option [value]="a.id">{{ a.reference }} – {{ a.libelle }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin:0">
+                      <label>Emplacement</label>
+                      <select formControlName="emplacementId"
+                              [class.invalid]="lg.get('emplacementId')!.invalid && lg.get('emplacementId')!.touched">
+                        <option value="">— Emplacement —</option>
+                        @for (e of emplacements(); track e.id) {
+                          <option [value]="e.id">{{ e.code }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin:0">
+                      <label>Qté</label>
+                      <input type="number" formControlName="quantite" min="1"
+                             [class.invalid]="lg.get('quantite')!.invalid && lg.get('quantite')!.touched">
+                    </div>
+                    <button type="button" class="btn btn-danger btn-sm"
+                            style="align-self:flex-end;margin-bottom:0"
+                            [disabled]="lignes.length <= 1"
+                            (click)="removeLigne($index)">✕</button>
+                  </div>
+
+                  @if (getArticleFlags($index).gestionDlc || getArticleFlags($index).gestionNumeroSerie) {
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+                      @if (getArticleFlags($index).gestionDlc) {
+                        <div class="form-group" style="margin:0">
+                          <label>DLC <span style="color:#ef4444">*</span></label>
+                          <input type="date" formControlName="dlc"
+                                 [class.invalid]="lg.get('dlc')!.invalid && lg.get('dlc')!.touched">
+                        </div>
+                      }
+                      @if (getArticleFlags($index).gestionNumeroSerie) {
+                        <div class="form-group" style="margin:0">
+                          <label>N° série <span style="color:#ef4444">*</span></label>
+                          <input type="text" formControlName="numeroSerie" placeholder="N° série"
+                                 [class.invalid]="lg.get('numeroSerie')!.invalid && lg.get('numeroSerie')!.touched">
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (formError()) {
+              <div class="alert-error">{{ formError() }}</div>
+            }
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+              <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
+                {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <style>
+      .badge { display:inline-block;padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600 }
+      .badge-warning { background:#fef3c7;color:#92400e }
+      .badge-success { background:#d1fae5;color:#065f46 }
+      .badge-danger  { background:#fee2e2;color:#991b1b }
+      .btn-success { background:#059669;color:#fff }
+      .btn-success:hover { background:#047857 }
+    </style>
+  `
+})
+export class ReceptionsListComponent implements OnInit {
+  receptions   = signal<Reception[]>([]);
+  articles     = signal<Article[]>([]);
+  emplacements = signal<Emplacement[]>([]);
+  tiers        = signal<Tiers[]>([]);
+  loading      = signal(false);
+  error        = signal('');
+  formError    = signal('');
+  showForm     = signal(false);
+  saving       = signal(false);
+  form: FormGroup;
+
+  private articleMap = new Map<number, Article>();
+
+  constructor(
+    private receptionService: ReceptionService,
+    private articleService: ArticleService,
+    private emplacementService: EmplacementService,
+    private tiersService: TiersService,
+    private fb: FormBuilder
+  ) {
+    this.form = this.fb.group({
+      tiersId:       [''],
+      dateReception: [new Date().toISOString().split('T')[0]],
+      lignes:        this.fb.array([])
+    });
+  }
+
+  get lignes(): FormArray { return this.form.get('lignes') as FormArray; }
+
+  newLigne() {
+    return this.fb.group({
+      articleId:     ['', Validators.required],
+      emplacementId: ['', Validators.required],
+      quantite:      [1, [Validators.required, Validators.min(1)]],
+      dlc:           [''],
+      numeroSerie:   ['']
+    });
+  }
+
+  ngOnInit() { this.load(); }
+
+  load() {
+    this.loading.set(true);
+    this.error.set('');
+    this.receptionService.getAll().subscribe({
+      next:  data => { this.receptions.set(data); this.loading.set(false); },
+      error: ()   => { this.error.set('Impossible de charger les réceptions.'); this.loading.set(false); }
+    });
+  }
+
+  openCreate() {
+    this.formError.set('');
+    this.lignes.clear();
+    this.addLigne();
+    this.form.patchValue({ tiersId: '', dateReception: new Date().toISOString().split('T')[0] });
+
+    forkJoin({
+      articles:     this.articleService.getAll(),
+      emplacements: this.emplacementService.getAll(),
+      tiers:        this.tiersService.getAll()
+    }).subscribe({
+      next: ({ articles, emplacements, tiers }) => {
+        this.articles.set(articles);
+        this.emplacements.set(emplacements);
+        this.tiers.set(tiers);
+        this.articleMap.clear();
+        articles.forEach(a => this.articleMap.set(a.id, a));
+        this.showForm.set(true);
+      },
+      error: () => this.error.set('Impossible de charger les données du formulaire.')
+    });
+  }
+
+  closeForm() { this.showForm.set(false); this.saving.set(false); }
+
+  addLigne() { this.lignes.push(this.newLigne()); }
+
+  removeLigne(i: number) { if (this.lignes.length > 1) this.lignes.removeAt(i); }
+
+  onArticleChange(index: number) {
+    const lg = this.lignes.at(index);
+    const articleId = +lg.get('articleId')!.value;
+    const article = this.articleMap.get(articleId);
+
+    const dlcCtrl = lg.get('dlc')!;
+    const nsCtrl  = lg.get('numeroSerie')!;
+
+    if (article?.gestionDlc) {
+      dlcCtrl.setValidators([Validators.required]);
+    } else {
+      dlcCtrl.clearValidators();
+      dlcCtrl.setValue('');
+    }
+
+    if (article?.gestionNumeroSerie) {
+      nsCtrl.setValidators([Validators.required]);
+    } else {
+      nsCtrl.clearValidators();
+      nsCtrl.setValue('');
+    }
+
+    dlcCtrl.updateValueAndValidity();
+    nsCtrl.updateValueAndValidity();
+  }
+
+  getArticleFlags(index: number): { gestionDlc: boolean; gestionNumeroSerie: boolean } {
+    const articleId = +this.lignes.at(index).get('articleId')!.value;
+    const article = this.articleMap.get(articleId);
+    return { gestionDlc: article?.gestionDlc ?? false, gestionNumeroSerie: article?.gestionNumeroSerie ?? false };
+  }
+
+  submit() {
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    this.saving.set(true);
+    this.formError.set('');
+
+    const v = this.form.value;
+    const payload: ReceptionPayload = {
+      tiersId:       v.tiersId ? +v.tiersId : null,
+      dateReception: v.dateReception || null,
+      lignes: this.lignes.value.map((l: any) => ({
+        articleId:     +l.articleId,
+        emplacementId: +l.emplacementId,
+        quantite:      +l.quantite,
+        dlc:           l.dlc || null,
+        numeroSerie:   l.numeroSerie || null
+      }))
+    };
+
+    this.receptionService.create(payload).subscribe({
+      next:  () => { this.load(); this.closeForm(); },
+      error: err => { this.formError.set(err.error?.message ?? 'Erreur lors de l\'enregistrement.'); this.saving.set(false); }
+    });
+  }
+
+  valider(r: Reception) {
+    if (!confirm(`Valider la réception #${r.id} ? Le stock sera mis à jour.`)) return;
+    this.receptionService.valider(r.id).subscribe({
+      next:  () => this.load(),
+      error: err => this.error.set(err.error?.message ?? 'Validation impossible.')
+    });
+  }
+
+  annuler(r: Reception) {
+    if (!confirm(`Annuler la réception #${r.id} ?`)) return;
+    this.receptionService.annuler(r.id).subscribe({
+      next:  () => this.load(),
+      error: err => this.error.set(err.error?.message ?? 'Annulation impossible.')
+    });
+  }
+
+  delete(r: Reception) {
+    if (!confirm(`Supprimer la réception #${r.id} ?`)) return;
+    this.receptionService.delete(r.id).subscribe({
+      next:  () => this.load(),
+      error: err => this.error.set(err.error?.message ?? 'Suppression impossible.')
+    });
+  }
+
+  badgeClass(statut: string): string {
+    return statut === 'EN_ATTENTE' ? 'badge badge-warning'
+         : statut === 'VALIDEE'    ? 'badge badge-success'
+         :                           'badge badge-danger';
+  }
+}
