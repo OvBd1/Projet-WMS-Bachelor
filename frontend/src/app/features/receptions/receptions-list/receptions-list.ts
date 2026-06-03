@@ -77,6 +77,7 @@ import { Tiers } from '../../../core/models/tiers.model';
                   <div style="display:flex;gap:4px;flex-wrap:wrap">
                     @if (r.statut === 'EN_ATTENTE') {
                       <button class="btn btn-success btn-sm" (click)="valider(r)" title="Valider">✓ Valider</button>
+                      <a [routerLink]="[r.id, 'edit']" class="btn btn-edit btn-sm" title="Modifier">✎ Modifier</a>
                       <button class="btn btn-secondary btn-sm" (click)="annuler(r)" title="Annuler">✕</button>
                     }
                     @if (r.statut !== 'VALIDEE') {
@@ -198,6 +199,8 @@ import { Tiers } from '../../../core/models/tiers.model';
       .badge-danger  { background:#fee2e2;color:#991b1b }
       .btn-success { background:#059669;color:#fff }
       .btn-success:hover { background:#047857 }
+      .btn-edit { background:#f59e0b;color:#fff }
+      .btn-edit:hover { background:#d97706 }
     </style>
   `
 })

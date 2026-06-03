@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { CommandeService } from '../../../core/services/commande.service';
 import { ArticleService } from '../../../core/services/article.service';
 import { Commande, StatutCommande } from '../../../core/models/commande.model';
@@ -18,7 +19,7 @@ const BADGE: Record<StatutCommande, string> = {
 @Component({
   selector: 'app-commandes-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="page-header">
       <h1>Commandes</h1>
@@ -71,6 +72,9 @@ const BADGE: Record<StatutCommande, string> = {
                 </td>
                 <td>
                   <div class="btn-group">
+                    @if (c.statut === 'EN_ATTENTE') {
+                      <a [routerLink]="[c.id, 'edit']" class="btn btn-edit btn-sm" title="Modifier">✎ Modifier</a>
+                    }
                     <button class="btn btn-warning btn-sm" (click)="openStatut(c)">Statut</button>
                     <button class="btn btn-danger btn-sm" (click)="delete(c)">Suppr.</button>
                   </div>
@@ -130,6 +134,11 @@ const BADGE: Record<StatutCommande, string> = {
         </div>
       </div>
     }
+
+    <style>
+      .btn-edit { background:#f59e0b;color:#fff;text-decoration:none;display:inline-flex;align-items:center }
+      .btn-edit:hover { background:#d97706 }
+    </style>
 
     @if (showStatutForm() && editingCommande()) {
       <div class="modal-overlay" (click)="closeStatutForm()">

@@ -84,6 +84,73 @@ class ReceptionService
         return $reception;
     }
 
+    public function update(Reception $reception, ReceptionDTO $dto): Reception
+    {
+        if ($reception->getStatut() !== 'EN_ATTENTE') {
+            throw new \DomainException('Seules les réceptions en attente peuvent être modifiées.');
+        }
+
+        if ($dto->tiersId) {
+            $tiers = $this->tiersRepo->find($dto->tiersId);
+            if (!$tiers) {
+                throw new \DomainException("Tiers {$dto->tiersId} introuvable.");
+            }
+            $reception->setTiers($tiers);
+        } else {
+            $reception->setTiers(null);
+        }
+
+        if ($dto->dateReception) {
+            $date = \DateTime::createFromFormat('Y-m-d', $dto->dateReception);
+            if ($date) {
+                $reception->setDateReception($date);
+            }
+        }
+
+        foreach ($reception->getLignesReception()->toArray() as $ligne) {
+            $reception->removeLigneReception($ligne);
+        }
+
+        foreach ($dto->lignes as $ligneDto) {
+            $article = $this->articleRepo->find($ligneDto->articleId);
+            if (!$article) {
+                throw new \DomainException("Article {$ligneDto->articleId} introuvable.");
+            }
+
+            $emplacement = $this->emplacementRepo->find($ligneDto->emplacementId);
+            if (!$emplacement) {
+                throw new \DomainException("Emplacement {$ligneDto->emplacementId} introuvable.");
+            }
+
+            if ($article->isGestionDlc() && !$ligneDto->dlc) {
+                throw new \DomainException("La DLC est obligatoire pour l'article {$article->getReference()}.");
+            }
+
+            if ($article->isGestionNumeroSerie() && !$ligneDto->numeroSerie) {
+                throw new \DomainException("Le numéro de série est obligatoire pour l'article {$article->getReference()}.");
+            }
+
+            $ligne = new LigneReception();
+            $ligne->setArticle($article)
+                  ->setEmplacement($emplacement)
+                  ->setQuantite($ligneDto->quantite);
+
+            if ($ligneDto->dlc) {
+                $dlcDate = \DateTime::createFromFormat('Y-m-d', $ligneDto->dlc);
+                if ($dlcDate) {
+                    $ligne->setDlc($dlcDate);
+                }
+            }
+
+            $ligne->setNumeroSerie($ligneDto->numeroSerie);
+            $reception->addLigneReception($ligne);
+        }
+
+        $this->em->flush();
+
+        return $reception;
+    }
+
     public function valider(Reception $reception): Reception
     {
         if ($reception->getStatut() !== 'EN_ATTENTE') {

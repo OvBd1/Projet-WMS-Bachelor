@@ -39,6 +39,38 @@ class CommandeService
         return $commande;
     }
 
+    public function update(Commande $commande, CommandeDTO $dto): Commande
+    {
+        if ($commande->getStatut() !== Commande::STATUT_EN_ATTENTE) {
+            throw new \DomainException('Seules les commandes en attente peuvent être modifiées.');
+        }
+
+        if ($dto->dateCommande) {
+            $date = \DateTime::createFromFormat('Y-m-d', $dto->dateCommande);
+            if ($date) {
+                $commande->setDateCommande($date);
+            }
+        }
+
+        foreach ($commande->getLignesCommande()->toArray() as $ligne) {
+            $commande->removeLigneCommande($ligne);
+        }
+
+        foreach ($dto->lignes as $ligneDto) {
+            $article = $this->articleRepo->find($ligneDto->articleId);
+            if (!$article) {
+                throw new \DomainException("Article {$ligneDto->articleId} introuvable.");
+            }
+
+            $ligne = new LigneCommande();
+            $ligne->setArticle($article)->setQuantite($ligneDto->quantite);
+            $commande->addLigneCommande($ligne);
+        }
+
+        $this->em->flush();
+        return $commande;
+    }
+
     public function updateStatut(Commande $commande, CommandeStatutDTO $dto): Commande
     {
         $commande->setStatut($dto->statut);

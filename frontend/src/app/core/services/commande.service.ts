@@ -8,6 +8,11 @@ export interface LigneCommandePayload {
   quantite: number;
 }
 
+export interface CommandePayload {
+  lignes: LigneCommandePayload[];
+  dateCommande?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CommandeService {
   private url = `${environment.apiUrl}/commandes`;
@@ -24,6 +29,10 @@ export class CommandeService {
 
   create(lignes: LigneCommandePayload[]) {
     return this.http.post<Commande>(this.url, { lignes });
+  }
+
+  update(id: number, payload: CommandePayload) {
+    return this.http.put<Commande>(`${this.url}/${id}`, payload);
   }
 
   updateStatut(id: number, statut: StatutCommande) {

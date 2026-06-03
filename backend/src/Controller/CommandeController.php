@@ -75,6 +75,43 @@ class CommandeController extends AbstractController
         return $this->json($this->service->normalize($commande), 201);
     }
 
+    #[Route('/{id}', name: 'update', methods: ['PUT'])]
+    public function update(int $id, Request $request): JsonResponse
+    {
+        $commande = $this->repo->find($id);
+        if (!$commande) {
+            return $this->json(['message' => 'Commande introuvable.'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        $dto = new CommandeDTO();
+        $dto->dateCommande = $data['dateCommande'] ?? null;
+        $dto->lignes = array_map(function (array $l): LigneCommandeDTO {
+            $ligne            = new LigneCommandeDTO();
+            $ligne->articleId = (int)($l['articleId'] ?? 0);
+            $ligne->quantite  = (int)($l['quantite'] ?? 0);
+            return $ligne;
+        }, $data['lignes'] ?? []);
+
+        $errors = $this->validator->validate($dto);
+        if (\count($errors) > 0) {
+            $messages = [];
+            foreach ($errors as $e) {
+                $messages[$e->getPropertyPath()] = $e->getMessage();
+            }
+            return $this->json(['errors' => $messages], 422);
+        }
+
+        try {
+            $this->service->update($commande, $dto);
+        } catch (\DomainException $e) {
+            return $this->json(['message' => $e->getMessage()], 409);
+        }
+
+        return $this->json($this->service->normalize($commande));
+    }
+
     #[Route('/{id}/statut', name: 'update_statut', methods: ['PATCH'])]
     public function updateStatut(int $id, Request $request): JsonResponse
     {

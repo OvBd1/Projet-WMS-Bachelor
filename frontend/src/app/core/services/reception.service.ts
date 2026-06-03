@@ -35,6 +35,10 @@ export class ReceptionService {
     return this.http.post<Reception>(this.url, payload);
   }
 
+  update(id: number, payload: ReceptionPayload) {
+    return this.http.put<Reception>(`${this.url}/${id}`, payload);
+  }
+
   valider(id: number) {
     return this.http.patch<Reception>(`${this.url}/${id}/valider`, {});
   }
