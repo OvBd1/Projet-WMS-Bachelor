@@ -12,3 +12,10 @@
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
+
+# Auto-generated config reference (IDE / debug:config)
+/config/reference.php
+
+# Symfony default Docker Compose (conflicte avec docker-compose.yml racine)
+/compose.yaml
+/compose.override.yaml
