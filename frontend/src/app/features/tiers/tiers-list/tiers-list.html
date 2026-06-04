@@ -1,0 +1,127 @@
+<div class="page-header">
+  <h1>Tiers</h1>
+  <button class="btn btn-primary" (click)="openCreate()">+ Nouveau tiers</button>
+</div>
+
+@if (error()) {
+  <div class="alert-error">{{ error() }}</div>
+}
+
+<div class="table-wrap">
+  @if (loading()) {
+    <div class="state-loading">
+      <div class="state-loading-spinner"></div>
+      <span>Chargement des tiers…</span>
+    </div>
+  } @else if (tiers().length === 0) {
+    <div class="state-empty">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+      </svg>
+      <p class="state-empty-title">Aucun tiers</p>
+      <p class="state-empty-sub">Créez vos premiers fournisseurs, clients ou partenaires.</p>
+    </div>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Nom</th>
+          <th>Type</th>
+          <th>Adresse</th>
+          <th style="width:140px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of tiers(); track t.id) {
+          <tr>
+            <td style="font-weight:600;font-family:monospace">{{ t.code }}</td>
+            <td>{{ t.nom }}</td>
+            <td><span class="badge" [class]="badgeClass(t.type)">{{ t.type }}</span></td>
+            <td style="font-size:.825rem;color:#475569">
+              @if (t.rue || t.ville) {
+                {{ [t.rue, t.codePostal, t.ville, t.pays].filter(v => !!v).join(', ') }}
+              } @else {
+                <span style="color:#94a3b8">—</span>
+              }
+            </td>
+            <td>
+              <div class="btn-group">
+                <button class="btn btn-edit btn-sm" (click)="openEdit(t)">✎ Modifier</button>
+                <button class="btn btn-danger btn-sm" (click)="delete(t)">Suppr.</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width:540px">
+      <h2>{{ editingTiers() ? 'Modifier le tiers' : 'Nouveau tiers' }}</h2>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label>Code <span style="color:#ef4444">*</span></label>
+            <input type="text" formControlName="code" placeholder="EX: FOUR001"
+                   [class.invalid]="form.get('code')!.invalid && form.get('code')!.touched">
+            @if (form.get('code')!.invalid && form.get('code')!.touched) {
+              <span class="field-error">Code obligatoire (max 50 car.)</span>
+            }
+          </div>
+          <div class="form-group">
+            <label>Type <span style="color:#ef4444">*</span></label>
+            <select formControlName="type">
+              @for (tp of types; track tp) {
+                <option [value]="tp">{{ tp }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nom <span style="color:#ef4444">*</span></label>
+          <input type="text" formControlName="nom" placeholder="Raison sociale"
+                 [class.invalid]="form.get('nom')!.invalid && form.get('nom')!.touched">
+          @if (form.get('nom')!.invalid && form.get('nom')!.touched) {
+            <span class="field-error">Nom obligatoire</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Rue</label>
+          <input type="text" formControlName="rue" placeholder="N° et nom de rue">
+        </div>
+
+        <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label>Code postal</label>
+            <input type="text" formControlName="codePostal" placeholder="75001">
+          </div>
+          <div class="form-group">
+            <label>Ville</label>
+            <input type="text" formControlName="ville" placeholder="Paris">
+          </div>
+          <div class="form-group">
+            <label>Pays</label>
+            <input type="text" formControlName="pays" placeholder="France">
+          </div>
+        </div>
+
+        @if (formError()) {
+          <div class="alert-error">{{ formError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
+            {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,8 +1,10 @@
 export interface Tiers {
   id: number;
+  code: string;
   nom: string;
   type: 'FOURNISSEUR' | 'CLIENT' | 'AUTRE';
-  email: string | null;
-  telephone: string | null;
-  adresse: string | null;
+  rue: string | null;
+  codePostal: string | null;
+  ville: string | null;
+  pays: string | null;
 }

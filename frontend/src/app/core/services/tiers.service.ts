@@ -4,11 +4,13 @@ import { environment } from '../../../environments/environment';
 import { Tiers } from '../models/tiers.model';
 
 export interface TiersPayload {
+  code: string;
   nom: string;
   type: string;
-  email?: string | null;
-  telephone?: string | null;
-  adresse?: string | null;
+  rue?: string | null;
+  codePostal?: string | null;
+  ville?: string | null;
+  pays?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
