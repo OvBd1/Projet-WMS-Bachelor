@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\TransfertEmplacementRepository;
+use App\Traits\AuditTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TransfertEmplacementRepository::class)]
 #[ORM\Table(name: 'transfert_emplacement')]
+#[ORM\HasLifecycleCallbacks]
 class TransfertEmplacement
 {
+    use AuditTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

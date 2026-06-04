@@ -50,7 +50,7 @@ class TypeEmplacementController extends AbstractController
             return $this->validationError($errors);
         }
 
-        return $this->json($this->service->normalize($this->service->create($dto)), 201);
+        return $this->json($this->service->normalize($this->service->create($dto, $this->getUser())), 201);
     }
 
     #[Route('/{id}', name: 'update', methods: ['PUT'])]
@@ -70,7 +70,7 @@ class TypeEmplacementController extends AbstractController
             return $this->validationError($errors);
         }
 
-        return $this->json($this->service->normalize($this->service->update($type, $dto)));
+        return $this->json($this->service->normalize($this->service->update($type, $dto, $this->getUser())));
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]

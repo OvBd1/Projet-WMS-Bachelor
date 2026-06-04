@@ -50,7 +50,7 @@ class ArticleController extends AbstractController
         }
 
         try {
-            $article = $this->service->create($dto);
+            $article = $this->service->create($dto, $this->getUser());
         } catch (\DomainException $e) {
             return $this->json(['message' => $e->getMessage()], 409);
         }
@@ -75,7 +75,7 @@ class ArticleController extends AbstractController
         }
 
         try {
-            $article = $this->service->update($article, $dto);
+            $article = $this->service->update($article, $dto, $this->getUser());
         } catch (\DomainException $e) {
             return $this->json(['message' => $e->getMessage()], 409);
         }

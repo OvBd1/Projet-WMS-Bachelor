@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\LigneCommandeRepository;
+use App\Traits\AuditTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: LigneCommandeRepository::class)]
 #[ORM\Table(name: 'ligne_commande')]
+#[ORM\HasLifecycleCallbacks]
 class LigneCommande
 {
+    use AuditTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

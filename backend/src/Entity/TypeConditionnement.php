@@ -3,14 +3,17 @@
 namespace App\Entity;
 
 use App\Repository\TypeConditionnementRepository;
+use App\Traits\AuditTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TypeConditionnementRepository::class)]
 #[ORM\Table(name: 'type_conditionnement')]
+#[ORM\HasLifecycleCallbacks]
 class TypeConditionnement
 {
+    use AuditTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

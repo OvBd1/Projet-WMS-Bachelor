@@ -50,7 +50,7 @@ class EmplacementController extends AbstractController
         }
 
         try {
-            $emplacement = $this->service->create($dto);
+            $emplacement = $this->service->create($dto, $this->getUser());
         } catch (\DomainException $e) {
             return $this->json(['message' => $e->getMessage()], 409);
         }
@@ -75,7 +75,7 @@ class EmplacementController extends AbstractController
         }
 
         try {
-            $emplacement = $this->service->update($emplacement, $dto);
+            $emplacement = $this->service->update($emplacement, $dto, $this->getUser());
         } catch (\DomainException $e) {
             return $this->json(['message' => $e->getMessage()], 409);
         }

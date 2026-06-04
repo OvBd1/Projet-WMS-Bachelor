@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\DTO\EmplacementDTO;
 use App\Entity\Emplacement;
+use App\Entity\Utilisateur;
 use App\Repository\EmplacementRepository;
 use App\Repository\TypeEmplacementRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,7 +17,7 @@ class EmplacementService
         private EntityManagerInterface $em
     ) {}
 
-    public function create(EmplacementDTO $dto): Emplacement
+    public function create(EmplacementDTO $dto, ?Utilisateur $user = null): Emplacement
     {
         if ($this->repo->findOneBy(['code' => $dto->code])) {
             throw new \DomainException('Ce code d\'emplacement existe déjà.');
@@ -32,13 +33,16 @@ class EmplacementService
                     ->setDescription($dto->description)
                     ->setTypeEmplacement($type);
 
+        if ($user) {
+            $emplacement->setCreatedBy($user);
+        }
         $this->em->persist($emplacement);
         $this->em->flush();
 
         return $emplacement;
     }
 
-    public function update(Emplacement $emplacement, EmplacementDTO $dto): Emplacement
+    public function update(Emplacement $emplacement, EmplacementDTO $dto, ?Utilisateur $user = null): Emplacement
     {
         $existing = $this->repo->findOneBy(['code' => $dto->code]);
         if ($existing && $existing->getId() !== $emplacement->getId()) {
@@ -54,6 +58,9 @@ class EmplacementService
                     ->setDescription($dto->description)
                     ->setTypeEmplacement($type);
 
+        if ($user) {
+            $emplacement->setUpdatedBy($user);
+        }
         $this->em->flush();
 
         return $emplacement;

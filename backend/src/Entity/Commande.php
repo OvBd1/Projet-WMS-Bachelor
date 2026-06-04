@@ -3,14 +3,17 @@
 namespace App\Entity;
 
 use App\Repository\CommandeRepository;
+use App\Traits\AuditTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ORM\Table(name: 'commande')]
+#[ORM\HasLifecycleCallbacks]
 class Commande
 {
+    use AuditTrait;
     public const STATUT_EN_ATTENTE = 'EN_ATTENTE';
     public const STATUT_PREPAREE   = 'PREPAREE';
     public const STATUT_EXPEDIEE   = 'EXPEDIEE';
@@ -26,6 +29,10 @@ class Commande
 
     #[ORM\Column(length: 20)]
     private string $statut = self::STATUT_EN_ATTENTE;
+
+    #[ORM\ManyToOne(targetEntity: Tiers::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Tiers $tiers = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: false)]
@@ -47,6 +54,9 @@ class Commande
 
     public function getStatut(): string { return $this->statut; }
     public function setStatut(string $statut): static { $this->statut = $statut; return $this; }
+
+    public function getTiers(): ?Tiers { return $this->tiers; }
+    public function setTiers(?Tiers $tiers): static { $this->tiers = $tiers; return $this; }
 
     public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
     public function setUtilisateur(?Utilisateur $utilisateur): static { $this->utilisateur = $utilisateur; return $this; }

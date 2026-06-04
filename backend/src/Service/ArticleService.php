@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\DTO\ArticleDTO;
 use App\Entity\Article;
+use App\Entity\Utilisateur;
 use App\Repository\ArticleRepository;
 use App\Repository\TypeConditionnementRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,7 +17,7 @@ class ArticleService
         private EntityManagerInterface $em
     ) {}
 
-    public function create(ArticleDTO $dto): Article
+    public function create(ArticleDTO $dto, ?Utilisateur $user = null): Article
     {
         if ($this->repo->findOneBy(['reference' => $dto->reference])) {
             throw new \DomainException('Une référence identique existe déjà.');
@@ -24,13 +25,16 @@ class ArticleService
 
         $article = new Article();
         $this->hydrate($article, $dto);
+        if ($user) {
+            $article->setCreatedBy($user);
+        }
         $this->em->persist($article);
         $this->em->flush();
 
         return $article;
     }
 
-    public function update(Article $article, ArticleDTO $dto): Article
+    public function update(Article $article, ArticleDTO $dto, ?Utilisateur $user = null): Article
     {
         $existing = $this->repo->findOneBy(['reference' => $dto->reference]);
         if ($existing && $existing->getId() !== $article->getId()) {
@@ -38,6 +42,9 @@ class ArticleService
         }
 
         $this->hydrate($article, $dto);
+        if ($user) {
+            $article->setUpdatedBy($user);
+        }
         $this->em->flush();
 
         return $article;

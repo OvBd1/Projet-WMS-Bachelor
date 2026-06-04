@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\DTO\TypeConditionnementDTO;
 use App\Entity\TypeConditionnement;
+use App\Entity\Utilisateur;
 use App\Repository\TypeConditionnementRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -14,18 +15,24 @@ class TypeConditionnementService
         private EntityManagerInterface $em
     ) {}
 
-    public function create(TypeConditionnementDTO $dto): TypeConditionnement
+    public function create(TypeConditionnementDTO $dto, ?Utilisateur $user = null): TypeConditionnement
     {
         $type = new TypeConditionnement();
         $type->setLibelle($dto->libelle);
+        if ($user) {
+            $type->setCreatedBy($user);
+        }
         $this->em->persist($type);
         $this->em->flush();
         return $type;
     }
 
-    public function update(TypeConditionnement $type, TypeConditionnementDTO $dto): TypeConditionnement
+    public function update(TypeConditionnement $type, TypeConditionnementDTO $dto, ?Utilisateur $user = null): TypeConditionnement
     {
         $type->setLibelle($dto->libelle);
+        if ($user) {
+            $type->setUpdatedBy($user);
+        }
         $this->em->flush();
         return $type;
     }

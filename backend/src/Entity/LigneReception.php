@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\LigneReceptionRepository;
+use App\Traits\AuditTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: LigneReceptionRepository::class)]
 #[ORM\Table(name: 'ligne_reception')]
+#[ORM\HasLifecycleCallbacks]
 class LigneReception
 {
+    use AuditTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

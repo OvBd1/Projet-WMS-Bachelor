@@ -3,13 +3,16 @@
 namespace App\Entity;
 
 use App\Repository\StockRepository;
+use App\Traits\AuditTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StockRepository::class)]
 #[ORM\Table(name: 'stock')]
 #[ORM\UniqueConstraint(name: 'uq_stock_article_emplacement', columns: ['article_id', 'emplacement_id'])]
+#[ORM\HasLifecycleCallbacks]
 class Stock
 {
+    use AuditTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

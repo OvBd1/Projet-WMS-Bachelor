@@ -3,14 +3,17 @@
 namespace App\Entity;
 
 use App\Repository\TypeEmplacementRepository;
+use App\Traits\AuditTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TypeEmplacementRepository::class)]
 #[ORM\Table(name: 'type_emplacement')]
+#[ORM\HasLifecycleCallbacks]
 class TypeEmplacement
 {
+    use AuditTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

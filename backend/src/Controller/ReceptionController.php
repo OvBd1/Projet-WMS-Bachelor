@@ -111,8 +111,11 @@ class ReceptionController extends AbstractController
             return $this->json(['errors' => $messages], 422);
         }
 
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
         try {
-            $this->service->update($reception, $dto);
+            $this->service->update($reception, $dto, $user);
         } catch (\DomainException $e) {
             return $this->json(['message' => $e->getMessage()], 409);
         }
@@ -128,8 +131,11 @@ class ReceptionController extends AbstractController
             return $this->json(['message' => 'Réception introuvable.'], 404);
         }
 
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
         try {
-            $this->service->valider($reception);
+            $this->service->valider($reception, $user);
         } catch (\DomainException $e) {
             return $this->json(['message' => $e->getMessage()], 409);
         }
@@ -145,8 +151,11 @@ class ReceptionController extends AbstractController
             return $this->json(['message' => 'Réception introuvable.'], 404);
         }
 
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
         try {
-            $this->service->annuler($reception);
+            $this->service->annuler($reception, $user);
         } catch (\DomainException $e) {
             return $this->json(['message' => $e->getMessage()], 409);
         }

@@ -51,7 +51,7 @@ class TiersController extends AbstractController
             return $this->json(['errors' => $messages], 422);
         }
 
-        return $this->json($this->service->normalize($this->service->create($dto)), 201);
+        return $this->json($this->service->normalize($this->service->create($dto, $this->getUser())), 201);
     }
 
     #[Route('/{id}', name: 'update', methods: ['PUT'])]
@@ -74,7 +74,7 @@ class TiersController extends AbstractController
             return $this->json(['errors' => $messages], 422);
         }
 
-        return $this->json($this->service->normalize($this->service->update($tiers, $dto)));
+        return $this->json($this->service->normalize($this->service->update($tiers, $dto, $this->getUser())));
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
@@ -90,12 +90,14 @@ class TiersController extends AbstractController
 
     private function buildDto(array $data): TiersDTO
     {
-        $dto            = new TiersDTO();
-        $dto->nom       = trim($data['nom'] ?? '');
-        $dto->type      = $data['type'] ?? 'FOURNISSEUR';
-        $dto->email     = $data['email'] ?: null;
-        $dto->telephone = $data['telephone'] ?: null;
-        $dto->adresse   = $data['adresse'] ?: null;
+        $dto             = new TiersDTO();
+        $dto->code       = trim($data['code'] ?? '');
+        $dto->nom        = trim($data['nom'] ?? '');
+        $dto->type       = $data['type'] ?? 'FOURNISSEUR';
+        $dto->rue        = ($data['rue'] ?? '') ?: null;
+        $dto->codePostal = ($data['codePostal'] ?? '') ?: null;
+        $dto->ville      = ($data['ville'] ?? '') ?: null;
+        $dto->pays       = ($data['pays'] ?? '') ?: null;
         return $dto;
     }
 }

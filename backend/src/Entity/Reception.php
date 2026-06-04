@@ -3,14 +3,21 @@
 namespace App\Entity;
 
 use App\Repository\ReceptionRepository;
+use App\Traits\AuditTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ReceptionRepository::class)]
 #[ORM\Table(name: 'reception')]
+#[ORM\HasLifecycleCallbacks]
 class Reception
 {
+    use AuditTrait;
+
+    public const STATUT_EN_ATTENTE = 'EN_ATTENTE';
+    public const STATUT_VALIDEE    = 'VALIDEE';
+    public const STATUT_ANNULEE    = 'ANNULEE';
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -25,6 +32,13 @@ class Reception
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'receptions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $validatedAt = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $validatedBy = null;
 
     #[ORM\ManyToOne(targetEntity: Tiers::class)]
     #[ORM\JoinColumn(nullable: true)]
@@ -49,6 +63,12 @@ class Reception
 
     public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
     public function setUtilisateur(?Utilisateur $utilisateur): static { $this->utilisateur = $utilisateur; return $this; }
+
+    public function getValidatedAt(): ?\DateTimeInterface { return $this->validatedAt; }
+    public function setValidatedAt(?\DateTimeInterface $validatedAt): static { $this->validatedAt = $validatedAt; return $this; }
+
+    public function getValidatedBy(): ?Utilisateur { return $this->validatedBy; }
+    public function setValidatedBy(?Utilisateur $validatedBy): static { $this->validatedBy = $validatedBy; return $this; }
 
     public function getTiers(): ?Tiers { return $this->tiers; }
     public function setTiers(?Tiers $tiers): static { $this->tiers = $tiers; return $this; }

@@ -47,6 +47,7 @@ class CommandeController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
 
         $dto = new CommandeDTO();
+        $dto->tiersId = isset($data['tiersId']) && $data['tiersId'] ? (int)$data['tiersId'] : null;
         $dto->lignes = array_map(function (array $l): LigneCommandeDTO {
             $ligne           = new LigneCommandeDTO();
             $ligne->articleId = (int)($l['articleId'] ?? 0);
@@ -55,7 +56,7 @@ class CommandeController extends AbstractController
         }, $data['lignes'] ?? []);
 
         $errors = $this->validator->validate($dto);
-        if (count($errors) > 0) {
+        if (\count($errors) > 0) {
             $messages = [];
             foreach ($errors as $e) {
                 $messages[$e->getPropertyPath()] = $e->getMessage();
@@ -87,6 +88,7 @@ class CommandeController extends AbstractController
 
         $dto = new CommandeDTO();
         $dto->dateCommande = $data['dateCommande'] ?? null;
+        $dto->tiersId = isset($data['tiersId']) && $data['tiersId'] ? (int)$data['tiersId'] : null;
         $dto->lignes = array_map(function (array $l): LigneCommandeDTO {
             $ligne            = new LigneCommandeDTO();
             $ligne->articleId = (int)($l['articleId'] ?? 0);
@@ -104,7 +106,7 @@ class CommandeController extends AbstractController
         }
 
         try {
-            $this->service->update($commande, $dto);
+            $this->service->update($commande, $dto, $this->getUser());
         } catch (\DomainException $e) {
             return $this->json(['message' => $e->getMessage()], 409);
         }
@@ -125,7 +127,7 @@ class CommandeController extends AbstractController
         $dto->statut = $data['statut'] ?? '';
 
         $errors = $this->validator->validate($dto);
-        if (count($errors) > 0) {
+        if (\count($errors) > 0) {
             $messages = [];
             foreach ($errors as $e) {
                 $messages[$e->getPropertyPath()] = $e->getMessage();
