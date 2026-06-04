@@ -10,6 +10,8 @@ export interface Commande {
   id: number;
   dateCommande: string;
   statut: StatutCommande;
+  tiers: { id: number; nom: string; type: string } | null;
   utilisateur: { id: number; email: string };
-  lignes: LigneCommande[];
+  lignes?: LigneCommande[];
+  nbLignes?: number;
 }

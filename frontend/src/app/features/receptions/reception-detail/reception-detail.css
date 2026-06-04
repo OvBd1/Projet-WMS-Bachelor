@@ -1,0 +1,13 @@
+.card { background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px }
+.info-grid { display:grid;grid-template-columns:140px 1fr;gap:8px 16px;margin:0 }
+.info-grid dt { color:#64748b;font-size:.85rem }
+.info-grid dd { margin:0;font-size:.9rem }
+.badge { display:inline-block;padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600 }
+.badge-warning { background:#fef3c7;color:#92400e }
+.badge-success { background:#d1fae5;color:#065f46 }
+.badge-danger  { background:#fee2e2;color:#991b1b }
+.btn-success { background:#059669;color:#fff }
+.btn-success:hover { background:#047857 }
+.dlc-ok      { color:#059669;font-weight:500 }
+.dlc-warning { color:#d97706;font-weight:500 }
+.dlc-expired { color:#ef4444;font-weight:500 }

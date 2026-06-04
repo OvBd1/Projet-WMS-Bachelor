@@ -1,0 +1,222 @@
+<div class="page-header">
+  <div style="display:flex;align-items:center;gap:12px">
+    <a routerLink="/commandes" class="btn btn-secondary btn-sm">← Retour</a>
+    <h1 style="margin:0">
+      Commande #{{ commande()?.id }}
+      @if (commande()) {
+        <span class="badge" [class]="badgeClass(commande()!.statut)" style="vertical-align:middle;margin-left:8px">{{ commande()!.statut }}</span>
+      }
+    </h1>
+  </div>
+  @if (!loading()) {
+    <div style="display:flex;gap:8px">
+      @if (commande()?.statut === 'EN_ATTENTE') {
+        <button class="btn btn-primary" [disabled]="saving()" (click)="save()">
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      }
+      <button class="btn btn-secondary" (click)="openStatutModal()">Changer le statut</button>
+      <button class="btn btn-danger" (click)="delete()">Supprimer</button>
+    </div>
+  }
+</div>
+
+@if (error()) {
+  <div class="alert-error">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="state-loading">
+    <div class="state-loading-spinner"></div>
+    <span>Chargement…</span>
+  </div>
+} @else if (commande()) {
+
+  @if (commande()!.statut === 'EN_ATTENTE') {
+    <div class="tabs-nav">
+      <button class="tab-btn" [class.active]="activeTab() === 'entete'" (click)="activeTab.set('entete')">
+        En-tête
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'lignes'" (click)="activeTab.set('lignes')">
+        Lignes <span class="tab-count">{{ lines().length }}</span>
+      </button>
+    </div>
+
+    @if (activeTab() === 'entete') {
+      <div class="card" style="max-width:480px;margin-top:20px">
+        <form [formGroup]="enteteForm">
+          <div class="form-group">
+            <label>Date de commande <span style="color:#ef4444">*</span></label>
+            <input type="date" formControlName="dateCommande"
+                   [class.invalid]="enteteForm.get('dateCommande')!.invalid && enteteForm.get('dateCommande')!.touched">
+            @if (enteteForm.get('dateCommande')!.invalid && enteteForm.get('dateCommande')!.touched) {
+              <span class="field-error">Date obligatoire</span>
+            }
+          </div>
+          <div class="form-group">
+            <label>Client / Tiers</label>
+            <select formControlName="tiersId">
+              <option value="">— Aucun tiers —</option>
+              @for (t of tiers(); track t.id) {
+                <option [value]="t.id">{{ t.nom }} ({{ t.type }})</option>
+              }
+            </select>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (activeTab() === 'lignes') {
+      <div style="margin-top:20px">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+          <button class="btn btn-primary btn-sm" (click)="openAddLigne()">+ Ajouter une ligne</button>
+        </div>
+
+        <div class="table-wrap">
+          @if (lines().length === 0) {
+            <div class="state-empty" style="padding:40px">
+              <p class="state-empty-title">Aucune ligne</p>
+              <p class="state-empty-sub">Ajoutez au moins une ligne à cette commande.</p>
+            </div>
+          } @else {
+            <table>
+              <thead>
+                <tr>
+                  <th>Référence</th>
+                  <th>Libellé</th>
+                  <th>Quantité</th>
+                  <th style="width:100px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (l of lines(); track l._idx) {
+                  <tr>
+                    <td style="font-weight:600">{{ l.articleReference }}</td>
+                    <td>{{ l.articleLibelle }}</td>
+                    <td>{{ l.quantite }}</td>
+                    <td>
+                      <div style="display:flex;gap:4px">
+                        <button class="btn btn-edit btn-sm" (click)="openEditLigne(l)" title="Modifier">✎</button>
+                        <button class="btn btn-danger btn-sm" (click)="removeLigne(l)" title="Supprimer">✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    }
+  } @else {
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px">
+      <div class="card">
+        <h3 style="margin:0 0 16px;font-size:1rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.05em">Informations générales</h3>
+        <dl class="info-grid">
+          <dt>Date de commande</dt>
+          <dd>{{ commande()!.dateCommande | date:'dd/MM/yyyy' }}</dd>
+          <dt>Statut</dt>
+          <dd><span class="badge" [class]="badgeClass(commande()!.statut)">{{ commande()!.statut }}</span></dd>
+          <dt>Utilisateur</dt>
+          <dd>{{ commande()!.utilisateur.email }}</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 16px;font-size:1rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.05em">Client / Tiers</h3>
+        @if (commande()!.tiers) {
+          <dl class="info-grid">
+            <dt>Nom</dt>
+            <dd style="font-weight:600">{{ commande()!.tiers!.nom }}</dd>
+            <dt>Type</dt>
+            <dd>{{ commande()!.tiers!.type }}</dd>
+          </dl>
+        } @else {
+          <p style="color:#94a3b8;margin:0">Aucun tiers associé</p>
+        }
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:24px">
+      <div style="padding:16px 20px;font-weight:600;border-bottom:1px solid #e2e8f0">
+        Lignes de commande
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Libellé</th>
+            <th>Quantité</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of lines(); track l._idx) {
+            <tr>
+              <td style="font-weight:600">{{ l.articleReference }}</td>
+              <td>{{ l.articleLibelle }}</td>
+              <td>{{ l.quantite }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}
+
+@if (showLigneModal()) {
+  <div class="modal-overlay" (click)="closeLigneModal()">
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width:440px">
+      <h2>{{ editingLigneIdx() !== null ? 'Modifier la ligne' : 'Ajouter une ligne' }}</h2>
+      <form [formGroup]="ligneForm" (ngSubmit)="saveLigne()">
+
+        <div class="form-group">
+          <label>Article <span style="color:#ef4444">*</span></label>
+          <select formControlName="articleId"
+                  [class.invalid]="ligneForm.get('articleId')!.invalid && ligneForm.get('articleId')!.touched">
+            <option value="">— Article —</option>
+            @for (a of articles(); track a.id) {
+              <option [value]="a.id">{{ a.reference }} – {{ a.libelle }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Quantité <span style="color:#ef4444">*</span></label>
+          <input type="number" formControlName="quantite" min="1"
+                 [class.invalid]="ligneForm.get('quantite')!.invalid && ligneForm.get('quantite')!.touched">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeLigneModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            {{ editingLigneIdx() !== null ? 'Mettre à jour' : 'Ajouter' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showStatutModal() && commande()) {
+  <div class="modal-overlay" (click)="closeStatutModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Changer le statut — Commande #{{ commande()!.id }}</h2>
+      <p style="margin-bottom:1rem;color:#475569;font-size:.875rem">
+        Statut actuel : <span class="badge" [class]="badgeClass(commande()!.statut)">{{ commande()!.statut }}</span>
+      </p>
+      <div class="btn-group" style="flex-wrap:wrap;gap:.5rem">
+        @for (s of statuts; track s) {
+          <button class="btn btn-secondary"
+                  [class.btn-primary]="s === commande()!.statut"
+                  [disabled]="s === commande()!.statut || saving()"
+                  (click)="changeStatut(s)">{{ s }}</button>
+        }
+      </div>
+      @if (formError()) {
+        <div class="alert-error" style="margin-top:1rem">{{ formError() }}</div>
+      }
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeStatutModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+}

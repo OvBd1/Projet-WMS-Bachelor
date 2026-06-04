@@ -11,6 +11,7 @@ export interface LigneCommandePayload {
 export interface CommandePayload {
   lignes: LigneCommandePayload[];
   dateCommande?: string | null;
+  tiersId?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,8 +28,8 @@ export class CommandeService {
     return this.http.get<Commande>(`${this.url}/${id}`);
   }
 
-  create(lignes: LigneCommandePayload[]) {
-    return this.http.post<Commande>(this.url, { lignes });
+  create(payload: CommandePayload) {
+    return this.http.post<Commande>(this.url, payload);
   }
 
   update(id: number, payload: CommandePayload) {
