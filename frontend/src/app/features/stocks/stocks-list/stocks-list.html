@@ -1,0 +1,67 @@
+<div class="page-header">
+  <h1>Stocks</h1>
+  <input style="padding:.4rem .75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:.875rem;width:240px"
+         [(ngModel)]="filterText"
+         (ngModelChange)="applyFilter()"
+         placeholder="Filtrer par article ou emplacement…">
+</div>
+
+@if (error()) {
+  <div class="alert-error">{{ error() }}</div>
+}
+
+<div class="table-wrap">
+  @if (loading()) {
+    <div class="state-loading">
+      <div class="state-loading-spinner"></div>
+      <span>Chargement des stocks…</span>
+    </div>
+  } @else if (filtered().length === 0) {
+    <div class="state-empty">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/>
+      </svg>
+      <p class="state-empty-title">{{ filterText ? 'Aucun résultat' : 'Aucun stock' }}</p>
+      <p class="state-empty-sub">{{ filterText ? 'Aucun stock ne correspond à votre recherche.' : 'Les stocks apparaissent après une réception.' }}</p>
+    </div>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Article</th>
+          <th>Référence</th>
+          <th>Emplacement</th>
+          <th>Quantité</th>
+          <th style="width:100px">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of filtered(); track s.id) {
+          <tr>
+            <td>{{ s.article.libelle }}</td>
+            <td><code>{{ s.article.reference }}</code></td>
+            <td><span class="badge badge-blue">{{ s.emplacement.code }}</span></td>
+            <td>
+              @if (editingId() === s.id) {
+                <input type="number" min="0" [formControl]="qtyControl"
+                       style="width:80px;padding:.25rem .5rem;border:1px solid #3b82f6;border-radius:4px">
+              } @else {
+                <strong>{{ s.quantite }}</strong>
+              }
+            </td>
+            <td>
+              @if (editingId() === s.id) {
+                <div class="btn-group">
+                  <button class="btn btn-success btn-sm" (click)="saveQty(s)">✓</button>
+                  <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">✗</button>
+                </div>
+              } @else {
+                <button class="btn btn-secondary btn-sm" (click)="startEdit(s)">Éditer</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
