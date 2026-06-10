@@ -90,7 +90,9 @@ body {
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -434,4 +436,20 @@ table {
   }
 
   .filter-search { flex: 1; min-width: 200px; }
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .75rem;
+  }
+
+  .modal { padding: 1.25rem; }
+
+  .cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+  [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
 }
