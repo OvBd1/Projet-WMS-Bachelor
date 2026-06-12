@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Component, signal } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -9,10 +10,29 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './main-layout.scss'
 })
 export class MainLayoutComponent {
-  constructor(public auth: AuthService, private router: Router) {}
+  mobileMenuOpen = signal(false);
+  openGroup = signal<string | null>(null);
+  profileMenuOpen = signal(false);
+
+  constructor(public auth: AuthService, private router: Router) {
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => { this.mobileMenuOpen.set(false); this.openGroup.set(null); this.profileMenuOpen.set(false); });
+  }
 
   logout(): void {
     this.auth.logout();
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen.update(v => !v);
+  }
+
+  toggleGroup(name: string): void {
+    this.openGroup.update(g => g === name ? null : name);
+  }
+
+  toggleProfileMenu(): void {
+    this.profileMenuOpen.update(v => !v);
   }
 
   isGroupActive(paths: string[]): boolean {
