@@ -205,7 +205,7 @@
   display: flex;
   align-items: center;
 
-  @media (min-width: 901px) {
+  @media (min-width: 1081px) {
     &:hover .nav-dropdown {
       opacity: 1;
       pointer-events: auto;
@@ -311,7 +311,7 @@
   background: var(--bg);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1080px) {
   .navbar { gap: .75rem; padding: 0 1rem; }
   .navbar-toggle { display: flex; }
 
