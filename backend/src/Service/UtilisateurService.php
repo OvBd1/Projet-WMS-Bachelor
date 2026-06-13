@@ -24,6 +24,8 @@ class UtilisateurService
 
         $user = new Utilisateur();
         $user->setEmail($dto->email)
+             ->setNom($dto->nom)
+             ->setPrenom($dto->prenom)
              ->setRole($dto->role)
              ->setPassword($this->hasher->hashPassword($user, $dto->password));
 
@@ -36,9 +38,11 @@ class UtilisateurService
     public function normalize(Utilisateur $u): array
     {
         return [
-            'id'    => $u->getId(),
-            'email' => $u->getEmail(),
-            'role'  => $u->getRole(),
+            'id'     => $u->getId(),
+            'email'  => $u->getEmail(),
+            'nom'    => $u->getNom(),
+            'prenom' => $u->getPrenom(),
+            'role'   => $u->getRole(),
         ];
     }
 }

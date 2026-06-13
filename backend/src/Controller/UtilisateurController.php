@@ -27,6 +27,8 @@ class UtilisateurController extends AbstractController
 
         $dto = new RegisterDTO();
         $dto->email    = $data['email'] ?? '';
+        $dto->nom      = $data['nom'] ?? '';
+        $dto->prenom   = $data['prenom'] ?? '';
         $dto->password = $data['password'] ?? '';
         $dto->role     = $data['role'] ?? 'ROLE_USER';
 

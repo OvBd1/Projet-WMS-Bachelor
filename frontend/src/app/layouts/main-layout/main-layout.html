@@ -100,7 +100,7 @@
       <div class="navbar-profile" [class.open]="profileMenuOpen()">
         <button type="button" class="navbar-user" (click)="toggleProfileMenu()" [attr.aria-expanded]="profileMenuOpen()">
           <div class="navbar-user-avatar">{{ auth.getUserInitials() }}</div>
-          <span class="navbar-user-name">{{ auth.getUserEmail() }}</span>
+          <span class="navbar-user-name">{{ auth.getUserDisplayName() }}</span>
           <svg class="navbar-user-chevron" viewBox="0 0 16 16" fill="currentColor">
             <path d="M4 6l4 4 4-4"/>
           </svg>

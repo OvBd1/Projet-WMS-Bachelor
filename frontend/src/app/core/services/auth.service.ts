@@ -45,11 +45,40 @@ export class AuthService {
     }
   }
 
+  getUserFullName(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const fullName = [payload.prenom, payload.nom].filter(Boolean).join(' ').trim();
+      return fullName || null;
+    } catch {
+      return null;
+    }
+  }
+
+  getUserDisplayName(): string {
+    return this.getUserFullName() ?? this.getUserEmail() ?? '?';
+  }
+
   getUserInitials(): string {
+    const token = this.getToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const initials = [payload.prenom, payload.nom]
+          .filter(Boolean)
+          .map((s: string) => s.charAt(0))
+          .join('');
+        if (initials) return initials.toUpperCase();
+      } catch {
+        // fall through to email-based initials
+      }
+    }
+
     const email = this.getUserEmail();
     if (!email) return '?';
-    const name = email.split('@')[0];
-    return name.slice(0, 2).toUpperCase();
+    return email.split('@')[0].slice(0, 2).toUpperCase();
   }
 
   private hasToken(): boolean {

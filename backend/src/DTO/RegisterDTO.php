@@ -11,6 +11,14 @@ class RegisterDTO
     public string $email = '';
 
     #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
+    public string $nom = '';
+
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
+    public string $prenom = '';
+
+    #[Assert\NotBlank]
     #[Assert\Length(min: 6)]
     public string $password = '';
 
