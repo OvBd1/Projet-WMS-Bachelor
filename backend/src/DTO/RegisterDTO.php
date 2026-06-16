@@ -24,4 +24,6 @@ class RegisterDTO
 
     #[Assert\Choice(choices: ['ROLE_USER', 'ROLE_ADMIN'])]
     public string $role = 'ROLE_USER';
+
+    public ?int $dossierId = null;
 }

@@ -36,6 +36,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50)]
     private string $role = 'ROLE_USER';
 
+    #[ORM\ManyToOne(targetEntity: Dossier::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Dossier $dossier = null;
+
     #[ORM\OneToMany(targetEntity: Reception::class, mappedBy: 'utilisateur')]
     private Collection $receptions;
 
@@ -69,6 +73,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRole(): string { return $this->role; }
     public function setRole(string $role): static { $this->role = $role; return $this; }
+
+    public function getDossier(): ?Dossier { return $this->dossier; }
+    public function setDossier(?Dossier $dossier): static { $this->dossier = $dossier; return $this; }
 
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(string $password): static { $this->password = $password; return $this; }

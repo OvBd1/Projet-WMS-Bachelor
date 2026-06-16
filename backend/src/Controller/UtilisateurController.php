@@ -23,14 +23,26 @@ class UtilisateurController extends AbstractController
     #[Route('/auth/register', name: 'auth_register', methods: ['POST'])]
     public function register(Request $request): JsonResponse
     {
+        return $this->doCreate($request);
+    }
+
+    #[Route('/utilisateurs', name: 'utilisateurs_create', methods: ['POST'])]
+    public function create(Request $request): JsonResponse
+    {
+        return $this->doCreate($request);
+    }
+
+    private function doCreate(Request $request): JsonResponse
+    {
         $data = json_decode($request->getContent(), true) ?? [];
 
         $dto = new RegisterDTO();
-        $dto->email    = $data['email'] ?? '';
-        $dto->nom      = $data['nom'] ?? '';
-        $dto->prenom   = $data['prenom'] ?? '';
-        $dto->password = $data['password'] ?? '';
-        $dto->role     = $data['role'] ?? 'ROLE_USER';
+        $dto->email     = $data['email'] ?? '';
+        $dto->nom       = $data['nom'] ?? '';
+        $dto->prenom    = $data['prenom'] ?? '';
+        $dto->password  = $data['password'] ?? '';
+        $dto->role      = $data['role'] ?? 'ROLE_USER';
+        $dto->dossierId = isset($data['dossierId']) ? (int) $data['dossierId'] : null;
 
         $errors = $this->validator->validate($dto);
         if (count($errors) > 0) {
