@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CommandeRepository;
 use App\Traits\AuditTrait;
+use App\Traits\DossierScopedTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\HasLifecycleCallbacks]
 class Commande
 {
-    use AuditTrait;
+    use AuditTrait, DossierScopedTrait;
     public const STATUT_EN_ATTENTE = 'EN_ATTENTE';
     public const STATUT_PREPAREE   = 'PREPAREE';
     public const STATUT_EXPEDIEE   = 'EXPEDIEE';

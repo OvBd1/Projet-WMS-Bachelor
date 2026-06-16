@@ -14,7 +14,8 @@ class ArticleService
     public function __construct(
         private ArticleRepository $repo,
         private TypeConditionnementRepository $typeCondRepo,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private DossierContext $dossierContext
     ) {}
 
     public function create(ArticleDTO $dto, ?Utilisateur $user = null): Article
@@ -25,6 +26,7 @@ class ArticleService
 
         $article = new Article();
         $this->hydrate($article, $dto);
+        $article->setDossier($this->dossierContext->getCurrentOrThrow());
         if ($user) {
             $article->setCreatedBy($user);
         }

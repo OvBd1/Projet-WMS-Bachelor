@@ -16,7 +16,8 @@ class CommandeService
     public function __construct(
         private ArticleRepository $articleRepo,
         private TiersRepository $tiersRepo,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private DossierContext $dossierContext
     ) {}
 
     public function create(CommandeDTO $dto, Utilisateur $utilisateur): Commande
@@ -24,6 +25,7 @@ class CommandeService
         $commande = new Commande();
         $commande->setUtilisateur($utilisateur);
         $commande->setCreatedBy($utilisateur);
+        $commande->setDossier($this->dossierContext->getCurrentOrThrow());
 
         if ($dto->tiersId) {
             $tiers = $this->tiersRepo->find($dto->tiersId);

@@ -4,22 +4,24 @@ namespace App\Entity;
 
 use App\Repository\EmplacementRepository;
 use App\Traits\AuditTrait;
+use App\Traits\DossierScopedTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EmplacementRepository::class)]
 #[ORM\Table(name: 'emplacement')]
+#[ORM\UniqueConstraint(name: 'uq_emplacement_dossier_code', columns: ['dossier_id', 'code'])]
 #[ORM\HasLifecycleCallbacks]
 class Emplacement
 {
-    use AuditTrait;
+    use AuditTrait, DossierScopedTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50, unique: true)]
+    #[ORM\Column(length: 50)]
     private ?string $code = null;
 
     #[ORM\Column(type: 'text', nullable: true)]

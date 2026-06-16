@@ -77,7 +77,7 @@ class StockController extends AbstractController
             return $this->json(['errors' => $messages], 422);
         }
 
-        $stock->setQuantite($dto->quantite);
+        $this->service->setQuantite($stock, $dto->quantite);
 
         return $this->json($this->service->normalize($stock));
     }

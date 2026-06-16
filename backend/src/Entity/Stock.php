@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\StockRepository;
 use App\Traits\AuditTrait;
+use App\Traits\DossierScopedTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StockRepository::class)]
@@ -12,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\HasLifecycleCallbacks]
 class Stock
 {
-    use AuditTrait;
+    use AuditTrait, DossierScopedTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

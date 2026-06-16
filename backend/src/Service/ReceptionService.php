@@ -18,7 +18,8 @@ class ReceptionService
         private EmplacementRepository $emplacementRepo,
         private TiersRepository $tiersRepo,
         private StockService $stockService,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private DossierContext $dossierContext
     ) {}
 
     public function create(ReceptionDTO $dto, Utilisateur $utilisateur): Reception
@@ -27,6 +28,7 @@ class ReceptionService
         $reception->setUtilisateur($utilisateur);
         $reception->setStatut(Reception::STATUT_EN_ATTENTE);
         $reception->setCreatedBy($utilisateur);
+        $reception->setDossier($this->dossierContext->getCurrentOrThrow());
 
         if ($dto->dateReception) {
             $date = \DateTime::createFromFormat('Y-m-d', $dto->dateReception);

@@ -24,6 +24,10 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
+        filters:
+            dossier_filter:
+                class: App\Doctrine\DossierFilter
+                enabled: false
 
 when@test:
     doctrine:

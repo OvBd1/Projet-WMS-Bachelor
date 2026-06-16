@@ -12,7 +12,8 @@ class StockService
 {
     public function __construct(
         private StockRepository $stockRepo,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private DossierContext $dossierContext
     ) {}
 
     public function adjust(Article $article, Emplacement $emplacement, int $delta): Stock
@@ -25,6 +26,7 @@ class StockService
         if (!$stock) {
             $stock = new Stock();
             $stock->setArticle($article)->setEmplacement($emplacement)->setQuantite(0);
+            $stock->setDossier($this->dossierContext->getCurrentOrThrow());
             $this->em->persist($stock);
         }
 
@@ -41,6 +43,13 @@ class StockService
 
         $stock->setQuantite($newQty);
 
+        return $stock;
+    }
+
+    public function setQuantite(Stock $stock, int $quantite): Stock
+    {
+        $stock->setQuantite($quantite);
+        $this->em->flush();
         return $stock;
     }
 

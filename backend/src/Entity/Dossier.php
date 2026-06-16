@@ -2,31 +2,26 @@
 
 namespace App\Entity;
 
-use App\Repository\TiersRepository;
+use App\Repository\DossierRepository;
 use App\Traits\AuditTrait;
-use App\Traits\DossierScopedTrait;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: TiersRepository::class)]
-#[ORM\Table(name: 'tiers')]
-#[ORM\UniqueConstraint(name: 'uq_tiers_dossier_code', columns: ['dossier_id', 'code'])]
+#[ORM\Entity(repositoryClass: DossierRepository::class)]
+#[ORM\Table(name: 'dossier')]
 #[ORM\HasLifecycleCallbacks]
-class Tiers
+class Dossier
 {
-    use AuditTrait, DossierScopedTrait;
+    use AuditTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, unique: true)]
     private ?string $code = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $nom = null;
-
-    #[ORM\Column(length: 20)]
-    private string $type = 'FOURNISSEUR';
+    private ?string $raisonSociale = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $rue = null;
@@ -45,11 +40,8 @@ class Tiers
     public function getCode(): ?string { return $this->code; }
     public function setCode(string $code): static { $this->code = $code; return $this; }
 
-    public function getNom(): ?string { return $this->nom; }
-    public function setNom(string $nom): static { $this->nom = $nom; return $this; }
-
-    public function getType(): string { return $this->type; }
-    public function setType(string $type): static { $this->type = $type; return $this; }
+    public function getRaisonSociale(): ?string { return $this->raisonSociale; }
+    public function setRaisonSociale(string $raisonSociale): static { $this->raisonSociale = $raisonSociale; return $this; }
 
     public function getRue(): ?string { return $this->rue; }
     public function setRue(?string $rue): static { $this->rue = $rue; return $this; }

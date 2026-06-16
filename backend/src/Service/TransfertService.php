@@ -15,7 +15,8 @@ class TransfertService
         private ArticleRepository $articleRepo,
         private EmplacementRepository $emplacementRepo,
         private StockService $stockService,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private DossierContext $dossierContext
     ) {}
 
     public function create(TransfertDTO $dto, Utilisateur $utilisateur): TransfertEmplacement
@@ -47,7 +48,8 @@ class TransfertService
                   ->setArticle($article)
                   ->setEmplacementSource($source)
                   ->setEmplacementDestination($destination)
-                  ->setQuantite($dto->quantite);
+                  ->setQuantite($dto->quantite)
+                  ->setDossier($this->dossierContext->getCurrentOrThrow());
 
         $this->em->persist($transfert);
         $this->em->flush();

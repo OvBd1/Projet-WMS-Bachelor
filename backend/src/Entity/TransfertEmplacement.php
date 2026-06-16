@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\TransfertEmplacementRepository;
 use App\Traits\AuditTrait;
+use App\Traits\DossierScopedTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TransfertEmplacementRepository::class)]
@@ -11,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\HasLifecycleCallbacks]
 class TransfertEmplacement
 {
-    use AuditTrait;
+    use AuditTrait, DossierScopedTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

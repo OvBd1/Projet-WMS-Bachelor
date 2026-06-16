@@ -12,13 +12,15 @@ class TypeConditionnementService
 {
     public function __construct(
         private TypeConditionnementRepository $repo,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private DossierContext $dossierContext
     ) {}
 
     public function create(TypeConditionnementDTO $dto, ?Utilisateur $user = null): TypeConditionnement
     {
         $type = new TypeConditionnement();
         $type->setLibelle($dto->libelle);
+        $type->setDossier($this->dossierContext->getCurrentOrThrow());
         if ($user) {
             $type->setCreatedBy($user);
         }

@@ -12,13 +12,15 @@ class TypeEmplacementService
 {
     public function __construct(
         private TypeEmplacementRepository $repo,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private DossierContext $dossierContext
     ) {}
 
     public function create(TypeEmplacementDTO $dto, ?Utilisateur $user = null): TypeEmplacement
     {
         $type = new TypeEmplacement();
         $type->setLibelle($dto->libelle);
+        $type->setDossier($this->dossierContext->getCurrentOrThrow());
         if ($user) {
             $type->setCreatedBy($user);
         }

@@ -4,22 +4,24 @@ namespace App\Entity;
 
 use App\Repository\ArticleRepository;
 use App\Traits\AuditTrait;
+use App\Traits\DossierScopedTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[ORM\Table(name: 'article')]
+#[ORM\UniqueConstraint(name: 'uq_article_dossier_reference', columns: ['dossier_id', 'reference'])]
 #[ORM\HasLifecycleCallbacks]
 class Article
 {
-    use AuditTrait;
+    use AuditTrait, DossierScopedTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50, unique: true)]
+    #[ORM\Column(length: 50)]
     private ?string $reference = null;
 
     #[ORM\Column(length: 255)]

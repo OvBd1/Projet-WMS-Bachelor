@@ -14,7 +14,8 @@ class EmplacementService
     public function __construct(
         private EmplacementRepository $repo,
         private TypeEmplacementRepository $typeRepo,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private DossierContext $dossierContext
     ) {}
 
     public function create(EmplacementDTO $dto, ?Utilisateur $user = null): Emplacement
@@ -31,7 +32,8 @@ class EmplacementService
         $emplacement = new Emplacement();
         $emplacement->setCode($dto->code)
                     ->setDescription($dto->description)
-                    ->setTypeEmplacement($type);
+                    ->setTypeEmplacement($type)
+                    ->setDossier($this->dossierContext->getCurrentOrThrow());
 
         if ($user) {
             $emplacement->setCreatedBy($user);
