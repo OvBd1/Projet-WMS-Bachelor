@@ -5,6 +5,16 @@ import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { LoginResponse } from '../models/user.model';
 
+interface JwtPayload {
+  username?: string;
+  email?: string;
+  nom?: string | null;
+  prenom?: string | null;
+  roles?: string[];
+  id?: number;
+  [key: string]: unknown;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'jwt_token';
@@ -35,26 +45,15 @@ export class AuthService {
   }
 
   getUserEmail(): string | null {
-    const token = this.getToken();
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.email || payload.username || null;
-    } catch {
-      return null;
-    }
+    const payload = this.getPayload();
+    return payload?.email || payload?.username || null;
   }
 
   getUserFullName(): string | null {
-    const token = this.getToken();
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const fullName = [payload.prenom, payload.nom].filter(Boolean).join(' ').trim();
-      return fullName || null;
-    } catch {
-      return null;
-    }
+    const payload = this.getPayload();
+    if (!payload) return null;
+    const fullName = [payload.prenom, payload.nom].filter(Boolean).join(' ').trim();
+    return fullName || null;
   }
 
   getUserDisplayName(): string {
@@ -62,23 +61,32 @@ export class AuthService {
   }
 
   getUserInitials(): string {
-    const token = this.getToken();
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const initials = [payload.prenom, payload.nom]
-          .filter(Boolean)
-          .map((s: string) => s.charAt(0))
-          .join('');
-        if (initials) return initials.toUpperCase();
-      } catch {
-        // fall through to email-based initials
-      }
+    const payload = this.getPayload();
+    if (payload) {
+      const initials = [payload.prenom, payload.nom]
+        .filter(Boolean)
+        .map(s => (s as string).charAt(0))
+        .join('');
+      if (initials) return initials.toUpperCase();
     }
 
     const email = this.getUserEmail();
     if (!email) return '?';
     return email.split('@')[0].slice(0, 2).toUpperCase();
+  }
+
+  isAdmin(): boolean {
+    return !!this.getPayload()?.roles?.includes('ROLE_ADMIN');
+  }
+
+  private getPayload(): JwtPayload | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
   }
 
   private hasToken(): boolean {

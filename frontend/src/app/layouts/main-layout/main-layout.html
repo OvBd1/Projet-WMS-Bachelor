@@ -93,10 +93,39 @@
         </div>
       </div>
 
+      @if (auth.isAdmin()) {
+        <a class="nav-link" routerLink="/dossiers" routerLinkActive="active">Dossiers</a>
+        <a class="nav-link" routerLink="/utilisateurs" routerLinkActive="active">Utilisateurs</a>
+      }
+
     </nav>
 
     <!-- Right actions -->
     <div class="navbar-right">
+      @if (auth.isAdmin()) {
+        <div class="navbar-dossier" [class.open]="dossierMenuOpen()">
+          <button type="button" class="navbar-dossier-trigger" (click)="toggleDossierMenu()" [attr.aria-expanded]="dossierMenuOpen()">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
+            <span class="navbar-dossier-name">{{ currentDossierLabel() }}</span>
+            <svg class="navbar-dossier-chevron" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4 6l4 4 4-4"/>
+            </svg>
+          </button>
+
+          @if (dossierMenuOpen()) {
+            <div class="navbar-dossier-dropdown">
+              @for (d of dossiers(); track d.id) {
+                <button type="button" class="navbar-dossier-option"
+                        [class.active]="d.id === dossierContext.currentDossierId()"
+                        (click)="selectDossier(d.id)">
+                  {{ d.raisonSociale }} <span>({{ d.code }})</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+
       <div class="navbar-profile" [class.open]="profileMenuOpen()">
         <button type="button" class="navbar-user" (click)="toggleProfileMenu()" [attr.aria-expanded]="profileMenuOpen()">
           <div class="navbar-user-avatar">{{ auth.getUserInitials() }}</div>
@@ -122,6 +151,10 @@
 
   @if (profileMenuOpen()) {
     <div class="navbar-backdrop navbar-backdrop-transparent" (click)="toggleProfileMenu()"></div>
+  }
+
+  @if (dossierMenuOpen()) {
+    <div class="navbar-backdrop navbar-backdrop-transparent" (click)="toggleDossierMenu()"></div>
   }
 
   <main class="content">

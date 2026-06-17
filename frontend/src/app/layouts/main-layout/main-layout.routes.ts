@@ -1,10 +1,13 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './main-layout';
+import { adminGuard } from '../../core/guards/admin.guard';
+import { dossierGuard } from '../../core/guards/dossier.guard';
 
 export const mainRoutes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
+    canActivateChild: [dossierGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
@@ -46,6 +49,16 @@ export const mainRoutes: Routes = [
       {
         path: 'tiers',
         loadChildren: () => import('../../features/tiers/tiers.routes').then(m => m.tiersRoutes)
+      },
+      {
+        path: 'dossiers',
+        canActivate: [adminGuard],
+        loadChildren: () => import('../../features/dossiers/dossiers.routes').then(m => m.dossiersRoutes)
+      },
+      {
+        path: 'utilisateurs',
+        canActivate: [adminGuard],
+        loadChildren: () => import('../../features/utilisateurs/utilisateurs.routes').then(m => m.utilisateursRoutes)
       }
     ]
   }
