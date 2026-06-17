@@ -4,6 +4,7 @@ export interface User {
   nom: string | null;
   prenom: string | null;
   role: string;
+  dossier: { id: number; code: string; raisonSociale: string } | null;
 }
 
 export interface LoginResponse {

@@ -1,0 +1,131 @@
+<div class="page-header">
+  <h1>Utilisateurs</h1>
+  <button class="btn btn-primary" (click)="openCreate()">+ Nouvel utilisateur</button>
+</div>
+
+@if (error()) {
+  <div class="alert-error">{{ error() }}</div>
+}
+
+<div class="table-wrap">
+  @if (loading()) {
+    <div class="state-loading">
+      <div class="state-loading-spinner"></div>
+      <span>Chargement des utilisateurs…</span>
+    </div>
+  } @else if (utilisateurs().length === 0) {
+    <div class="state-empty">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+      </svg>
+      <p class="state-empty-title">Aucun utilisateur</p>
+      <p class="state-empty-sub">Créez le premier utilisateur pour un dossier.</p>
+    </div>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Nom</th>
+          <th>Rôle</th>
+          <th>Dossier</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of utilisateurs(); track u.id) {
+          <tr>
+            <td>{{ u.email }}</td>
+            <td>{{ [u.prenom, u.nom].filter(v => !!v).join(' ') || '—' }}</td>
+            <td>
+              <span class="badge" [class]="u.role === 'ROLE_ADMIN' ? 'badge-blue' : 'badge-gray'">{{ u.role }}</span>
+            </td>
+            <td>
+              @if (u.dossier) {
+                {{ u.dossier.raisonSociale }} <span style="color:#94a3b8">({{ u.dossier.code }})</span>
+              } @else {
+                <span style="color:#94a3b8">— (tous les dossiers)</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width:540px">
+      <h2>Nouvel utilisateur</h2>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="form-group">
+          <label>Email <span style="color:#ef4444">*</span></label>
+          <input type="email" formControlName="email" placeholder="utilisateur@entreprise.fr"
+                 [class.invalid]="form.get('email')!.invalid && form.get('email')!.touched">
+          @if (form.get('email')!.invalid && form.get('email')!.touched) {
+            <span class="field-error">Email valide obligatoire</span>
+          }
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label>Prénom <span style="color:#ef4444">*</span></label>
+            <input type="text" formControlName="prenom"
+                   [class.invalid]="form.get('prenom')!.invalid && form.get('prenom')!.touched">
+            @if (form.get('prenom')!.invalid && form.get('prenom')!.touched) {
+              <span class="field-error">Prénom obligatoire</span>
+            }
+          </div>
+          <div class="form-group">
+            <label>Nom <span style="color:#ef4444">*</span></label>
+            <input type="text" formControlName="nom"
+                   [class.invalid]="form.get('nom')!.invalid && form.get('nom')!.touched">
+            @if (form.get('nom')!.invalid && form.get('nom')!.touched) {
+              <span class="field-error">Nom obligatoire</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Mot de passe <span style="color:#ef4444">*</span></label>
+          <input type="password" formControlName="password" placeholder="6 caractères minimum"
+                 [class.invalid]="form.get('password')!.invalid && form.get('password')!.touched">
+          @if (form.get('password')!.invalid && form.get('password')!.touched) {
+            <span class="field-error">6 caractères minimum</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Rôle <span style="color:#ef4444">*</span></label>
+          <select formControlName="role">
+            <option value="ROLE_USER">ROLE_USER</option>
+            <option value="ROLE_ADMIN">ROLE_ADMIN</option>
+          </select>
+        </div>
+
+        @if (isRoleUser()) {
+          <div class="form-group">
+            <label>Dossier <span style="color:#ef4444">*</span></label>
+            <select formControlName="dossierId">
+              <option value="">— Sélectionner un dossier —</option>
+              @for (d of dossiers(); track d.id) {
+                <option [value]="d.id">{{ d.raisonSociale }} ({{ d.code }})</option>
+              }
+            </select>
+          </div>
+        }
+
+        @if (formError()) {
+          <div class="alert-error">{{ formError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
+            {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
