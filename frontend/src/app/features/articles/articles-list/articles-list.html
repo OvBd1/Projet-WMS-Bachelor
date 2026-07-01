@@ -98,12 +98,15 @@
 
             <div class="form-group">
               <label>Type de conditionnement</label>
-              <select formControlName="typeConditionnementId">
-                <option [ngValue]="null">— Aucun —</option>
-                @for (tc of typesConditionnement(); track tc.id) {
-                  <option [ngValue]="tc.id">{{ tc.libelle }}</option>
-                }
-              </select>
+              <div style="display:flex;gap:0.5rem;align-items:center">
+                <select formControlName="typeConditionnementId" style="flex:1">
+                  <option [ngValue]="null">— Aucun —</option>
+                  @for (tc of typesConditionnement(); track tc.id) {
+                    <option [ngValue]="tc.id">{{ tc.libelle }}</option>
+                  }
+                </select>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="openTypeForm()">+ Type</button>
+              </div>
             </div>
 
             <div style="display:flex;gap:2rem;margin-bottom:1rem">
@@ -142,6 +145,30 @@
               <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
               <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
                 {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    @if (showTypeForm()) {
+      <div class="modal-overlay" (click)="closeTypeForm()" style="z-index:1200">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <h2>Nouveau type de conditionnement</h2>
+          <form [formGroup]="typeForm" (ngSubmit)="submitType()">
+            <div class="form-group">
+              <label>Libellé *</label>
+              <input formControlName="libelle" placeholder="Carton, Palette, Sachet…" maxlength="100"
+                     [class.invalid]="typeForm.get('libelle')!.invalid && typeForm.get('libelle')!.touched">
+            </div>
+            @if (typeFormError()) {
+              <div class="alert-error">{{ typeFormError() }}</div>
+            }
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="closeTypeForm()">Annuler</button>
+              <button type="submit" class="btn btn-primary" [disabled]="typeForm.invalid || savingType()">
+                {{ savingType() ? 'Enregistrement…' : 'Enregistrer' }}
               </button>
             </div>
           </form>
