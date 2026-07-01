@@ -6,7 +6,7 @@ import { forkJoin } from 'rxjs';
 import { ReceptionService, ReceptionPayload } from '../../../core/services/reception.service';
 import { ArticleService } from '../../../core/services/article.service';
 import { EmplacementService } from '../../../core/services/emplacement.service';
-import { TiersService } from '../../../core/services/tiers.service';
+import { TiersService, TiersPayload } from '../../../core/services/tiers.service';
 import { Reception } from '../../../core/models/reception.model';
 import { Article } from '../../../core/models/article.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
@@ -28,7 +28,11 @@ export class ReceptionsListComponent implements OnInit {
   formError    = signal('');
   showForm     = signal(false);
   saving       = signal(false);
+  showTiersForm  = signal(false);
+  savingTiers    = signal(false);
+  tiersFormError = signal('');
   form: FormGroup;
+  tiersForm: FormGroup;
 
   private articleMap = new Map<number, Article>();
 
@@ -43,6 +47,13 @@ export class ReceptionsListComponent implements OnInit {
       tiersId:       [''],
       dateReception: [new Date().toISOString().split('T')[0]],
       lignes:        this.fb.array([])
+    });
+    this.tiersForm = this.fb.group({
+      nom:       ['', [Validators.required, Validators.maxLength(255)]],
+      type:      ['FOURNISSEUR', Validators.required],
+      email:     ['', [Validators.email, Validators.maxLength(255)]],
+      telephone: ['', Validators.maxLength(30)],
+      adresse:   ['']
     });
   }
 
@@ -93,6 +104,45 @@ export class ReceptionsListComponent implements OnInit {
   }
 
   closeForm() { this.showForm.set(false); this.saving.set(false); }
+
+  openTiersForm() {
+    this.tiersFormError.set('');
+    this.tiersForm.reset({ nom: '', type: 'FOURNISSEUR', email: '', telephone: '', adresse: '' });
+    this.showTiersForm.set(true);
+  }
+
+  closeTiersForm() {
+    this.showTiersForm.set(false);
+    this.savingTiers.set(false);
+    this.tiersForm.reset({ nom: '', type: 'FOURNISSEUR', email: '', telephone: '', adresse: '' });
+  }
+
+  submitTiers() {
+    if (this.tiersForm.invalid) { this.tiersForm.markAllAsTouched(); return; }
+    this.savingTiers.set(true);
+    this.tiersFormError.set('');
+    const v = this.tiersForm.value;
+    const payload: TiersPayload = {
+      nom:       v.nom,
+      type:      v.type,
+      email:     v.email || null,
+      telephone: v.telephone || null,
+      adresse:   v.adresse || null
+    };
+    this.tiersService.create(payload).subscribe({
+      next: created => {
+        // Recharge la liste puis sélectionne automatiquement le tiers créé.
+        this.tiersService.getAll().subscribe({
+          next: data => {
+            this.tiers.set(data);
+            this.form.patchValue({ tiersId: String(created.id) });
+          }
+        });
+        this.closeTiersForm();
+      },
+      error: err => { this.tiersFormError.set(err.error?.message ?? 'Erreur lors de la création du tiers.'); this.savingTiers.set(false); }
+    });
+  }
 
   addLigne() { this.lignes.push(this.newLigne()); }
 
