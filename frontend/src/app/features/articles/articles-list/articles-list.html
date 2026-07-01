@@ -76,7 +76,7 @@
     @if (showForm()) {
       <div class="modal-overlay" (click)="closeForm()">
         <div class="modal" style="max-width:560px" (click)="$event.stopPropagation()">
-          <h2>{{ editing() ? 'Modifier l'article' : 'Nouvel article' }}</h2>
+          <h2>{{ editing() ? 'Modifier l\'article' : 'Nouvel article' }}</h2>
           <form [formGroup]="form" (ngSubmit)="submit()">
 
             <div class="form-group">
