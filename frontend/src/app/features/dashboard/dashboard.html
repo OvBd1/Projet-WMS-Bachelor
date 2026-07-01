@@ -1,0 +1,25 @@
+
+    <div class="page-header">
+      <h1>Dashboard</h1>
+    </div>
+
+    <div class="cards-grid">
+      @if (loading()) {
+        @for (_ of [1,2,3,4,5,6]; track $index) {
+          <div class="card" style="min-height:110px;animation:pulse 1.2s ease-in-out infinite alternate">
+            <div style="height:12px;width:60%;background:#e2e8f0;border-radius:4px;margin-bottom:1rem"></div>
+            <div style="height:32px;width:40%;background:#e2e8f0;border-radius:4px"></div>
+          </div>
+        }
+      } @else {
+        @for (c of cards(); track c.label) {
+          <a [routerLink]="c.route" style="text-decoration:none">
+            <div class="card" [style.border-left]="'4px solid ' + c.color">
+              <div class="card-icon">{{ c.icon }}</div>
+              <div class="card-value">{{ c.value }}</div>
+              <div class="card-label">{{ c.label }}</div>
+            </div>
+          </a>
+        }
+      }
+    </div>

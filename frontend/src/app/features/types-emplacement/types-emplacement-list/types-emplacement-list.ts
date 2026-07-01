@@ -8,76 +8,7 @@ import { TypeEmplacement } from '../../../core/models/type-emplacement.model';
   selector: 'app-types-emplacement-list',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  template: `
-    <div class="page-header">
-      <h1>Types d'emplacement</h1>
-      <button class="btn btn-primary" (click)="openCreate()">+ Nouveau type</button>
-    </div>
-
-    @if (error()) {
-      <div class="alert-error">{{ error() }}</div>
-    }
-
-    <div class="table-wrap">
-      @if (loading()) {
-        <div class="state-loading">
-          <div class="state-loading-spinner"></div>
-          <span>Chargement…</span>
-        </div>
-      } @else if (types().length === 0) {
-        <div class="state-empty">
-          <p class="state-empty-title">Aucun type d'emplacement</p>
-          <p class="state-empty-sub">Créez votre premier type d'emplacement.</p>
-        </div>
-      } @else {
-        <table>
-          <thead>
-            <tr>
-              <th>Libellé</th>
-              <th style="width:120px">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (t of types(); track t.id) {
-              <tr>
-                <td>{{ t.libelle }}</td>
-                <td>
-                  <div class="btn-group">
-                    <button class="btn btn-secondary btn-sm" (click)="openEdit(t)">Éditer</button>
-                    <button class="btn btn-danger btn-sm" (click)="delete(t)">Suppr.</button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
-
-    @if (showForm()) {
-      <div class="modal-overlay" (click)="closeForm()">
-        <div class="modal" (click)="$event.stopPropagation()">
-          <h2>{{ editing() ? 'Modifier le type' : 'Nouveau type' }}</h2>
-          <form [formGroup]="form" (ngSubmit)="submit()">
-            <div class="form-group">
-              <label>Libellé *</label>
-              <input formControlName="libelle" placeholder="Ex : Allée, Rayon, Zone froide…"
-                     [class.invalid]="form.get('libelle')!.invalid && form.get('libelle')!.touched">
-            </div>
-            @if (formError()) {
-              <div class="alert-error">{{ formError() }}</div>
-            }
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
-              <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
-                {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    }
-  `
+  templateUrl: './types-emplacement-list.html'
 })
 export class TypesEmplacementListComponent implements OnInit {
   types     = signal<TypeEmplacement[]>([]);
