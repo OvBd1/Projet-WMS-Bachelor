@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\DTO\LigneReceptionDTO;
+use App\DTO\LigneReceptionUpdateDTO;
 use App\DTO\ReceptionDTO;
 use App\Entity\Utilisateur;
 use App\Repository\ReceptionRepository;
@@ -77,6 +78,51 @@ class ReceptionController extends AbstractController
         }
 
         return $this->json($this->service->normalize($reception), 201);
+    }
+
+    #[Route('/{id}/lignes/{ligneId}', name: 'update_ligne', methods: ['PATCH'])]
+    public function updateLigne(int $id, int $ligneId, Request $request): JsonResponse
+    {
+        $reception = $this->repo->find($id);
+        if (!$reception) {
+            return $this->json(['message' => 'Réception introuvable.'], 404);
+        }
+
+        $ligne = null;
+        foreach ($reception->getLignesReception() as $l) {
+            if ($l->getId() === $ligneId) {
+                $ligne = $l;
+                break;
+            }
+        }
+        if (!$ligne) {
+            return $this->json(['message' => 'Ligne de réception introuvable.'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        $dto                = new LigneReceptionUpdateDTO();
+        $dto->emplacementId = (int)($data['emplacementId'] ?? 0);
+        $dto->quantite      = (int)($data['quantite'] ?? 0);
+        $dto->dlc           = $data['dlc'] ?? null;
+        $dto->numeroSerie   = $data['numeroSerie'] ?? null;
+
+        $errors = $this->validator->validate($dto);
+        if (\count($errors) > 0) {
+            $messages = [];
+            foreach ($errors as $e) {
+                $messages[$e->getPropertyPath()] = $e->getMessage();
+            }
+            return $this->json(['errors' => $messages], 422);
+        }
+
+        try {
+            $this->service->updateLigne($reception, $ligne, $dto);
+        } catch (\DomainException $e) {
+            return $this->json(['message' => $e->getMessage()], 409);
+        }
+
+        return $this->json($this->service->normalize($reception));
     }
 
     #[Route('/{id}/valider', name: 'valider', methods: ['PATCH'])]
