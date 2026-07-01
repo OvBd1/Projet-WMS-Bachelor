@@ -1,0 +1,14 @@
+<div class="modal-overlay" (click)="cancelled.emit()" style="z-index:1300">
+  <div class="modal" (click)="$event.stopPropagation()" style="max-width:440px">
+    <h2>{{ title() }}</h2>
+    <p style="color:var(--text-muted);margin:0 0 1.5rem;line-height:1.5">{{ message() }}</p>
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancelled.emit()" [disabled]="loading()">
+        {{ cancelLabel() }}
+      </button>
+      <button type="button" class="btn" [class]="'btn-' + variant()" (click)="confirmed.emit()" [disabled]="loading()">
+        {{ loading() ? 'Traitement…' : confirmLabel() }}
+      </button>
+    </div>
+  </div>
+</div>

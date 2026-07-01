@@ -230,6 +230,17 @@
       </div>
     }
 
+    @if (confirmBox(); as cb) {
+      <app-confirm-dialog
+        [title]="cb.title"
+        [message]="cb.message"
+        [confirmLabel]="cb.confirmLabel"
+        [variant]="cb.variant"
+        [loading]="confirmLoading()"
+        (confirmed)="onConfirmAccept()"
+        (cancelled)="onConfirmCancel()" />
+    }
+
     <style>
       .badge { display:inline-block;padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600 }
       .badge-warning { background:#fef3c7;color:#92400e }
