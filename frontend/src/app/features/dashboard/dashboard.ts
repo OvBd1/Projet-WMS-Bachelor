@@ -9,42 +9,7 @@ interface Card { label: string; value: number | string; icon: string; route: str
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  template: `
-    <div class="page-header">
-      <h1>Dashboard</h1>
-    </div>
-
-    <div class="cards-grid">
-      @if (loading()) {
-        @for (_ of [1,2,3,4,5,6]; track $index) {
-          <div class="card" style="min-height:110px;animation:pulse 1.2s ease-in-out infinite alternate">
-            <div style="height:12px;width:60%;background:#e2e8f0;border-radius:4px;margin-bottom:1rem"></div>
-            <div style="height:32px;width:40%;background:#e2e8f0;border-radius:4px"></div>
-          </div>
-        }
-      } @else {
-        @for (c of cards(); track c.label) {
-          <a [routerLink]="c.route" style="text-decoration:none">
-            <div class="card" [style.border-left]="'4px solid ' + c.color">
-              <div class="card-icon">{{ c.icon }}</div>
-              <div class="card-value">{{ c.value }}</div>
-              <div class="card-label">{{ c.label }}</div>
-            </div>
-          </a>
-        }
-      }
-    </div>
-
-    <div style="background:#fff;border-radius:10px;padding:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.08)">
-      <h2 style="margin:0 0 1rem;font-size:1rem;color:#475569">Accès rapide</h2>
-      <div style="display:flex;flex-wrap:wrap;gap:.5rem">
-        <a routerLink="/receptions" class="btn btn-primary">Nouvelle réception</a>
-        <a routerLink="/commandes"  class="btn btn-secondary">Nouvelle commande</a>
-        <a routerLink="/transferts" class="btn btn-secondary">Transfert de stock</a>
-        <a routerLink="/articles"   class="btn btn-secondary">Gérer les articles</a>
-      </div>
-    </div>
-  `
+  templateUrl: './dashboard.html'
 })
 export class DashboardComponent implements OnInit {
   loading = signal(false);
