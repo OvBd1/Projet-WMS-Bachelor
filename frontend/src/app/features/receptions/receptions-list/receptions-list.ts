@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { ReceptionService, ReceptionPayload } from '../../../core/services/reception.service';
 import { ArticleService } from '../../../core/services/article.service';
 import { EmplacementService } from '../../../core/services/emplacement.service';
@@ -11,11 +11,20 @@ import { Reception } from '../../../core/models/reception.model';
 import { Article } from '../../../core/models/article.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
 import { Tiers } from '../../../core/models/tiers.model';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog';
+
+interface ConfirmConfig {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  variant: 'primary' | 'danger' | 'success' | 'warning';
+  action: () => void;
+}
 
 @Component({
   selector: 'app-receptions-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, ConfirmDialogComponent],
   templateUrl: './receptions-list.html'
 })
 export class ReceptionsListComponent implements OnInit {
@@ -25,6 +34,8 @@ export class ReceptionsListComponent implements OnInit {
   tiers        = signal<Tiers[]>([]);
   loading      = signal(false);
   error        = signal('');
+  confirmBox     = signal<ConfirmConfig | null>(null);
+  confirmLoading = signal(false);
   formError    = signal('');
   showForm     = signal(false);
   saving       = signal(false);
@@ -204,27 +215,44 @@ export class ReceptionsListComponent implements OnInit {
     });
   }
 
+  onConfirmAccept() { this.confirmBox()?.action(); }
+  onConfirmCancel() { this.confirmBox.set(null); this.confirmLoading.set(false); }
+
   valider(r: Reception) {
-    if (!confirm(`Valider la réception #${r.id} ? Le stock sera mis à jour.`)) return;
-    this.receptionService.valider(r.id).subscribe({
-      next:  () => this.load(),
-      error: err => this.error.set(err.error?.message ?? 'Validation impossible.')
+    this.confirmBox.set({
+      title: 'Valider la réception',
+      message: `Valider la réception #${r.id} ? Le stock sera mis à jour en conséquence.`,
+      confirmLabel: 'Valider',
+      variant: 'success',
+      action: () => this.runAction(this.receptionService.valider(r.id), 'Validation impossible.')
     });
   }
 
   annuler(r: Reception) {
-    if (!confirm(`Annuler la réception #${r.id} ?`)) return;
-    this.receptionService.annuler(r.id).subscribe({
-      next:  () => this.load(),
-      error: err => this.error.set(err.error?.message ?? 'Annulation impossible.')
+    this.confirmBox.set({
+      title: 'Annuler la réception',
+      message: `La réception #${r.id} sera marquée comme annulée. Continuer ?`,
+      confirmLabel: 'Annuler la réception',
+      variant: 'warning',
+      action: () => this.runAction(this.receptionService.annuler(r.id), 'Annulation impossible.')
     });
   }
 
   delete(r: Reception) {
-    if (!confirm(`Supprimer la réception #${r.id} ?`)) return;
-    this.receptionService.delete(r.id).subscribe({
-      next:  () => this.load(),
-      error: err => this.error.set(err.error?.message ?? 'Suppression impossible.')
+    this.confirmBox.set({
+      title: 'Supprimer la réception',
+      message: `Supprimer définitivement la réception #${r.id} ? Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      variant: 'danger',
+      action: () => this.runAction(this.receptionService.delete(r.id), 'Suppression impossible.')
+    });
+  }
+
+  private runAction(obs: Observable<unknown>, errorMsg: string) {
+    this.confirmLoading.set(true);
+    obs.subscribe({
+      next:  () => { this.load(); this.onConfirmCancel(); },
+      error: err => { this.error.set(err.error?.message ?? errorMsg); this.onConfirmCancel(); }
     });
   }
 

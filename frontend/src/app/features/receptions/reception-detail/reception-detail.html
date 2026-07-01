@@ -187,6 +187,17 @@
       </div>
     }
 
+    @if (confirmBox(); as cb) {
+      <app-confirm-dialog
+        [title]="cb.title"
+        [message]="cb.message"
+        [confirmLabel]="cb.confirmLabel"
+        [variant]="cb.variant"
+        [loading]="confirmLoading()"
+        (confirmed)="onConfirmAccept()"
+        (cancelled)="onConfirmCancel()" />
+    }
+
     <style>
       .card { background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px }
       .info-grid { display:grid;grid-template-columns:140px 1fr;gap:8px 16px;margin:0 }

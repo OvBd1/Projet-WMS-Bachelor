@@ -6,11 +6,20 @@ import { ReceptionService } from '../../../core/services/reception.service';
 import { EmplacementService } from '../../../core/services/emplacement.service';
 import { Reception, LigneReception } from '../../../core/models/reception.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog';
+
+interface ConfirmConfig {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  variant: 'primary' | 'danger' | 'success' | 'warning';
+  action: () => void;
+}
 
 @Component({
   selector: 'app-reception-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ConfirmDialogComponent],
   templateUrl: './reception-detail.html'
 })
 export class ReceptionDetailComponent implements OnInit {
@@ -23,6 +32,9 @@ export class ReceptionDetailComponent implements OnInit {
   savingLigne    = signal(false);
   ligneFormError = signal('');
   ligneForm: FormGroup;
+
+  confirmBox     = signal<ConfirmConfig | null>(null);
+  confirmLoading = signal(false);
 
   constructor(
     private route: ActivatedRoute,
@@ -97,19 +109,38 @@ export class ReceptionDetailComponent implements OnInit {
     });
   }
 
+  onConfirmAccept() { this.confirmBox()?.action(); }
+  onConfirmCancel() { this.confirmBox.set(null); this.confirmLoading.set(false); }
+
   valider() {
-    if (!confirm('Valider la réception ? Le stock sera mis à jour.')) return;
-    this.receptionService.valider(this.reception()!.id).subscribe({
-      next:  data => this.reception.set(data),
-      error: err  => this.error.set(err.error?.message ?? 'Validation impossible.')
+    this.confirmBox.set({
+      title: 'Valider la réception',
+      message: 'Le stock sera mis à jour en conséquence. Confirmer la validation ?',
+      confirmLabel: 'Valider',
+      variant: 'success',
+      action: () => {
+        this.confirmLoading.set(true);
+        this.receptionService.valider(this.reception()!.id).subscribe({
+          next:  data => { this.reception.set(data); this.onConfirmCancel(); },
+          error: err  => { this.error.set(err.error?.message ?? 'Validation impossible.'); this.onConfirmCancel(); }
+        });
+      }
     });
   }
 
   annuler() {
-    if (!confirm('Annuler cette réception ?')) return;
-    this.receptionService.annuler(this.reception()!.id).subscribe({
-      next:  data => this.reception.set(data),
-      error: err  => this.error.set(err.error?.message ?? 'Annulation impossible.')
+    this.confirmBox.set({
+      title: 'Annuler la réception',
+      message: 'Cette réception sera marquée comme annulée. Continuer ?',
+      confirmLabel: 'Annuler la réception',
+      variant: 'warning',
+      action: () => {
+        this.confirmLoading.set(true);
+        this.receptionService.annuler(this.reception()!.id).subscribe({
+          next:  data => { this.reception.set(data); this.onConfirmCancel(); },
+          error: err  => { this.error.set(err.error?.message ?? 'Annulation impossible.'); this.onConfirmCancel(); }
+        });
+      }
     });
   }
 
