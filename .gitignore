@@ -5,3 +5,6 @@ frontend/dist/
 backend/vendor/
 backend/var/
 backend/.env.local
+
+# Docker : secrets compose (garder .env.example versionné)
+/.env
