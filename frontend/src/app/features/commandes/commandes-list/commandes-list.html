@@ -26,19 +26,34 @@
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Date</th>
+              <th>Numéro</th>
+              <th>Date expédition</th>
+              <th>Client / Tiers</th>
               <th>Statut</th>
               <th>Utilisateur</th>
               <th>Articles</th>
-              <th style="width:200px">Actions</th>
+              <th style="width:110px">Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (c of commandes(); track c.id) {
               <tr>
-                <td>#{{ c.id }}</td>
-                <td>{{ c.dateCommande | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td><span class="badge badge-blue">{{ c.numeroCommande }}</span></td>
+                <td>
+                  @if (c.dateExpedition) {
+                    {{ c.dateExpedition | date:'dd/MM/yyyy' }}
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td>
+                  @if (c.tiers) {
+                    <span style="font-weight:500">{{ c.tiers.nom }}</span>
+                    <span style="font-size:.75rem;color:#64748b;margin-left:4px">({{ c.tiers.type }})</span>
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
                 <td><span class="badge" [class]="badgeClass(c.statut)">{{ c.statut }}</span></td>
                 <td>{{ c.utilisateur.email }}</td>
                 <td>
@@ -70,6 +85,22 @@
         <div class="modal modal-wide" (click)="$event.stopPropagation()">
           <h2>Nouvelle commande</h2>
           <form [formGroup]="form" (ngSubmit)="submit()">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div class="form-group" style="margin:0">
+                <label>Client / Tiers</label>
+                <select formControlName="tiersId">
+                  <option value="">— Aucun tiers —</option>
+                  @for (t of tiers(); track t.id) {
+                    <option [value]="t.id">{{ t.nom }} ({{ t.type }})</option>
+                  }
+                </select>
+              </div>
+              <div class="form-group" style="margin:0">
+                <label>Date d'expédition</label>
+                <input type="date" formControlName="dateExpedition">
+              </div>
+            </div>
+
             <div class="lignes-section" formArrayName="lignes">
               <div class="ligne-header">
                 <span>Lignes de commande</span>
@@ -117,7 +148,7 @@
     @if (showStatutForm() && editingCommande()) {
       <div class="modal-overlay" (click)="closeStatutForm()">
         <div class="modal" (click)="$event.stopPropagation()">
-          <h2>Changer le statut — Commande #{{ editingCommande()!.id }}</h2>
+          <h2>Changer le statut — {{ editingCommande()!.numeroCommande }}</h2>
           <p style="margin-bottom:1rem;color:#475569;font-size:.875rem">
             Statut actuel : <span class="badge" [class]="badgeClass(editingCommande()!.statut)">{{ editingCommande()!.statut }}</span>
           </p>

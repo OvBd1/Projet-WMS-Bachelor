@@ -8,6 +8,12 @@ export interface LigneCommandePayload {
   quantite: number;
 }
 
+export interface CommandePayload {
+  lignes: LigneCommandePayload[];
+  tiersId?: number | null;
+  dateExpedition?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CommandeService {
   private url = `${environment.apiUrl}/commandes`;
@@ -22,8 +28,8 @@ export class CommandeService {
     return this.http.get<Commande>(`${this.url}/${id}`);
   }
 
-  create(lignes: LigneCommandePayload[]) {
-    return this.http.post<Commande>(this.url, { lignes });
+  create(payload: CommandePayload) {
+    return this.http.post<Commande>(this.url, payload);
   }
 
   updateStatut(id: number, statut: StatutCommande) {

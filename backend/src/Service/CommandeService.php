@@ -8,12 +8,14 @@ use App\Entity\Commande;
 use App\Entity\LigneCommande;
 use App\Entity\Utilisateur;
 use App\Repository\ArticleRepository;
+use App\Repository\TiersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CommandeService
 {
     public function __construct(
         private ArticleRepository $articleRepo,
+        private TiersRepository $tiersRepo,
         private EntityManagerInterface $em
     ) {}
 
@@ -21,6 +23,21 @@ class CommandeService
     {
         $commande = new Commande();
         $commande->setUtilisateur($utilisateur);
+
+        if ($dto->tiersId) {
+            $tiers = $this->tiersRepo->find($dto->tiersId);
+            if (!$tiers) {
+                throw new \DomainException("Tiers {$dto->tiersId} introuvable.");
+            }
+            $commande->setTiers($tiers);
+        }
+
+        if ($dto->dateExpedition) {
+            $date = \DateTime::createFromFormat('Y-m-d', $dto->dateExpedition);
+            if ($date) {
+                $commande->setDateExpedition($date);
+            }
+        }
 
         foreach ($dto->lignes as $ligneDto) {
             $article = $this->articleRepo->find($ligneDto->articleId);
@@ -33,7 +50,13 @@ class CommandeService
             $commande->addLigneCommande($ligne);
         }
 
+        // Numéro provisoire pour respecter la contrainte NOT NULL/unique au premier flush,
+        // puis remplacé par un numéro lisible basé sur l'id généré.
+        $commande->setNumeroCommande('TMP-' . uniqid());
         $this->em->persist($commande);
+        $this->em->flush();
+
+        $commande->setNumeroCommande('CMD-' . str_pad((string)$commande->getId(), 5, '0', STR_PAD_LEFT));
         $this->em->flush();
 
         return $commande;
@@ -55,9 +78,17 @@ class CommandeService
     public function normalize(Commande $c): array
     {
         return [
-            'id'           => $c->getId(),
-            'dateCommande' => $c->getDateCommande()?->format('Y-m-d H:i:s'),
-            'statut'       => $c->getStatut(),
+            'id'             => $c->getId(),
+            'numeroCommande' => $c->getNumeroCommande(),
+            'dateCommande'   => $c->getDateCommande()?->format('Y-m-d H:i:s'),
+            'dateExpedition' => $c->getDateExpedition()?->format('Y-m-d'),
+            'statut'         => $c->getStatut(),
+            'tiers'          => $c->getTiers() ? [
+                'id'    => $c->getTiers()->getId(),
+                'nom'   => $c->getTiers()->getNom(),
+                'type'  => $c->getTiers()->getType(),
+                'email' => $c->getTiers()->getEmail(),
+            ] : null,
             'utilisateur'  => [
                 'id'    => $c->getUtilisateur()->getId(),
                 'email' => $c->getUtilisateur()->getEmail(),
@@ -77,9 +108,16 @@ class CommandeService
     public function normalizeList(Commande $c): array
     {
         return [
-            'id'           => $c->getId(),
-            'dateCommande' => $c->getDateCommande()?->format('Y-m-d H:i:s'),
-            'statut'       => $c->getStatut(),
+            'id'             => $c->getId(),
+            'numeroCommande' => $c->getNumeroCommande(),
+            'dateCommande'   => $c->getDateCommande()?->format('Y-m-d H:i:s'),
+            'dateExpedition' => $c->getDateExpedition()?->format('Y-m-d'),
+            'statut'         => $c->getStatut(),
+            'tiers'          => $c->getTiers() ? [
+                'id'   => $c->getTiers()->getId(),
+                'nom'  => $c->getTiers()->getNom(),
+                'type' => $c->getTiers()->getType(),
+            ] : null,
             'utilisateur'  => [
                 'id'    => $c->getUtilisateur()->getId(),
                 'email' => $c->getUtilisateur()->getEmail(),

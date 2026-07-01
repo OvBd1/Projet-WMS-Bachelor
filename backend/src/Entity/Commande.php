@@ -21,8 +21,14 @@ class Commande
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(length: 30, unique: true)]
+    private ?string $numeroCommande = null;
+
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $dateCommande = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $dateExpedition = null;
 
     #[ORM\Column(length: 20)]
     private string $statut = self::STATUT_EN_ATTENTE;
@@ -30,6 +36,10 @@ class Commande
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
+
+    #[ORM\ManyToOne(targetEntity: Tiers::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Tiers $tiers = null;
 
     #[ORM\OneToMany(targetEntity: LigneCommande::class, mappedBy: 'commande', cascade: ['persist'], orphanRemoval: true)]
     private Collection $lignesCommande;
@@ -42,14 +52,23 @@ class Commande
 
     public function getId(): ?int { return $this->id; }
 
+    public function getNumeroCommande(): ?string { return $this->numeroCommande; }
+    public function setNumeroCommande(string $numeroCommande): static { $this->numeroCommande = $numeroCommande; return $this; }
+
     public function getDateCommande(): ?\DateTimeInterface { return $this->dateCommande; }
     public function setDateCommande(\DateTimeInterface $dateCommande): static { $this->dateCommande = $dateCommande; return $this; }
+
+    public function getDateExpedition(): ?\DateTimeInterface { return $this->dateExpedition; }
+    public function setDateExpedition(?\DateTimeInterface $dateExpedition): static { $this->dateExpedition = $dateExpedition; return $this; }
 
     public function getStatut(): string { return $this->statut; }
     public function setStatut(string $statut): static { $this->statut = $statut; return $this; }
 
     public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
     public function setUtilisateur(?Utilisateur $utilisateur): static { $this->utilisateur = $utilisateur; return $this; }
+
+    public function getTiers(): ?Tiers { return $this->tiers; }
+    public function setTiers(?Tiers $tiers): static { $this->tiers = $tiers; return $this; }
 
     public function getLignesCommande(): Collection { return $this->lignesCommande; }
 
