@@ -1,0 +1,67 @@
+# Base "prod-like" : images auto-suffisantes, Angular buildé + servi par nginx,
+# PHP-FPM optimisé, migrations auto au démarrage.
+# `docker compose up --build` et tout tourne sur http://localhost:${HTTP_PORT}
+#
+# Le mode dev (hot-reload) est activé automatiquement via docker-compose.override.yml
+# quand il est présent. Pour forcer le mode prod-like uniquement :
+#   docker compose -f docker-compose.yml up --build
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+
+  php:
+    build:
+      context: ./backend
+      target: app
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      APP_DEBUG: ${APP_DEBUG:-0}
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}?serverVersion=8.0&charset=utf8mb4"
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
+      JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+      JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+      # Utilisés par l'entrypoint pour attendre la base
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - uploads:/var/www/html/public/uploads
+      - jwt_keys:/var/www/html/config/jwt
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      # Les images uploadées sont servies directement par nginx (lecture seule)
+      - uploads:/srv/uploads:ro
+    depends_on:
+      - php
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  uploads:
+  jwt_keys:

@@ -1,0 +1,6 @@
+# Force LF pour les fichiers exécutés dans les conteneurs Linux
+# (évite les scripts cassés par des CRLF sur les clones Windows).
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.dockerignore  text eol=lf
+*.conf          text eol=lf
