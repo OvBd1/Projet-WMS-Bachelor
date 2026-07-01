@@ -104,7 +104,16 @@ export class EmplacementsListComponent implements OnInit {
     this.saving.set(true);
     this.typeFormError.set('');
     this.typeService.create(this.typeForm.value).subscribe({
-      next:  () => { this.load(); this.closeTypeForm(); },
+      next: created => {
+        // Recharge la liste des types puis sélectionne automatiquement celui qui vient d'être créé.
+        this.typeService.getAll().subscribe({
+          next: types => {
+            this.types.set(types);
+            this.form.patchValue({ typeEmplacementId: String(created.id) });
+          }
+        });
+        this.closeTypeForm();
+      },
       error: err => { this.typeFormError.set(err.error?.message ?? 'Erreur.'); this.saving.set(false); }
     });
   }

@@ -1,10 +1,7 @@
 
     <div class="page-header">
       <h1>Emplacements</h1>
-      <div class="btn-group">
-        <button class="btn btn-secondary" (click)="openTypeForm()">+ Type</button>
-        <button class="btn btn-primary" (click)="openCreate()">+ Emplacement</button>
-      </div>
+      <button class="btn btn-primary" (click)="openCreate()">+ Emplacement</button>
     </div>
 
     @if (error()) {
@@ -66,13 +63,16 @@
             </div>
             <div class="form-group">
               <label>Type d'emplacement *</label>
-              <select formControlName="typeEmplacementId"
-                      [class.invalid]="form.get('typeEmplacementId')!.invalid && form.get('typeEmplacementId')!.touched">
-                <option value="">— Choisir un type —</option>
-                @for (t of types(); track t.id) {
-                  <option [value]="t.id">{{ t.libelle }}</option>
-                }
-              </select>
+              <div style="display:flex;gap:0.5rem;align-items:center">
+                <select formControlName="typeEmplacementId" style="flex:1"
+                        [class.invalid]="form.get('typeEmplacementId')!.invalid && form.get('typeEmplacementId')!.touched">
+                  <option value="">— Choisir un type —</option>
+                  @for (t of types(); track t.id) {
+                    <option [value]="t.id">{{ t.libelle }}</option>
+                  }
+                </select>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="openTypeForm()">+ Type</button>
+              </div>
             </div>
             <div class="form-group">
               <label>Description</label>
@@ -93,7 +93,7 @@
     }
 
     @if (showTypeForm()) {
-      <div class="modal-overlay" (click)="closeTypeForm()">
+      <div class="modal-overlay" (click)="closeTypeForm()" style="z-index:1200">
         <div class="modal" (click)="$event.stopPropagation()">
           <h2>Nouveau type d'emplacement</h2>
           <form [formGroup]="typeForm" (ngSubmit)="submitType()">
