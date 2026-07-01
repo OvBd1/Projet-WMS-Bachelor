@@ -28,8 +28,12 @@ export class ArticlesListComponent implements OnInit {
   saving               = signal(false);
   editing              = signal<Article | null>(null);
   previewArticle       = signal<Article | null>(null);
+  showTypeForm         = signal(false);
+  savingType           = signal(false);
+  typeFormError        = signal('');
   selectedFile: File | null = null;
   form: FormGroup;
+  typeForm: FormGroup;
 
   private readonly apiBase = environment.apiUrl.replace('/api', '');
 
@@ -45,6 +49,9 @@ export class ArticlesListComponent implements OnInit {
       gestionDlc:            [false],
       gestionNumeroSerie:    [false],
       typeConditionnementId: [null],
+    });
+    this.typeForm = this.fb.group({
+      libelle: ['', [Validators.required, Validators.maxLength(100)]],
     });
   }
 
@@ -93,6 +100,37 @@ export class ArticlesListComponent implements OnInit {
     this.selectedFile = null;
     this.form.reset();
     this.editing.set(null);
+  }
+
+  openTypeForm() {
+    this.typeFormError.set('');
+    this.typeForm.reset({ libelle: '' });
+    this.showTypeForm.set(true);
+  }
+
+  closeTypeForm() {
+    this.showTypeForm.set(false);
+    this.savingType.set(false);
+    this.typeForm.reset({ libelle: '' });
+  }
+
+  submitType() {
+    if (this.typeForm.invalid) { this.typeForm.markAllAsTouched(); return; }
+    this.savingType.set(true);
+    this.typeFormError.set('');
+    this.typeCondService.create(this.typeForm.value).subscribe({
+      next: created => {
+        // Recharge la liste puis sélectionne automatiquement le type fraîchement créé.
+        this.typeCondService.getAll().subscribe({
+          next: data => {
+            this.typesConditionnement.set(data);
+            this.form.patchValue({ typeConditionnementId: created.id });
+          }
+        });
+        this.closeTypeForm();
+      },
+      error: err => { this.typeFormError.set(err.error?.message ?? 'Erreur lors de la création du type.'); this.savingType.set(false); }
+    });
   }
 
   onFileSelected(event: Event) {
