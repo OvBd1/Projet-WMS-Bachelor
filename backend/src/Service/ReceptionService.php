@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\DTO\LigneReceptionUpdateDTO;
 use App\DTO\ReceptionDTO;
 use App\Entity\LigneReception;
 use App\Entity\Reception;
@@ -82,6 +83,44 @@ class ReceptionService
         $this->em->flush();
 
         return $reception;
+    }
+
+    public function updateLigne(Reception $reception, LigneReception $ligne, LigneReceptionUpdateDTO $dto): LigneReception
+    {
+        if ($reception->getStatut() !== 'EN_ATTENTE') {
+            throw new \DomainException("Seules les lignes d'une réception en attente peuvent être modifiées.");
+        }
+
+        $emplacement = $this->emplacementRepo->find($dto->emplacementId);
+        if (!$emplacement) {
+            throw new \DomainException("Emplacement {$dto->emplacementId} introuvable.");
+        }
+
+        $article = $ligne->getArticle();
+
+        if ($article->isGestionDlc() && !$dto->dlc) {
+            throw new \DomainException("La DLC est obligatoire pour l'article {$article->getReference()}.");
+        }
+
+        if ($article->isGestionNumeroSerie() && !$dto->numeroSerie) {
+            throw new \DomainException("Le numéro de série est obligatoire pour l'article {$article->getReference()}.");
+        }
+
+        $ligne->setEmplacement($emplacement)
+              ->setQuantite($dto->quantite);
+
+        if ($dto->dlc) {
+            $dlcDate = \DateTime::createFromFormat('Y-m-d', $dto->dlc);
+            $ligne->setDlc($dlcDate ?: null);
+        } else {
+            $ligne->setDlc(null);
+        }
+
+        $ligne->setNumeroSerie($dto->numeroSerie);
+
+        $this->em->flush();
+
+        return $ligne;
     }
 
     public function valider(Reception $reception): Reception

@@ -85,6 +85,9 @@
               <th>Quantité</th>
               <th>DLC</th>
               <th>N° série</th>
+              @if (reception()!.statut === 'EN_ATTENTE') {
+                <th style="width:90px">Actions</th>
+              }
             </tr>
           </thead>
           <tbody>
@@ -118,10 +121,67 @@
                     <span style="color:#94a3b8">—</span>
                   }
                 </td>
+                @if (reception()!.statut === 'EN_ATTENTE') {
+                  <td>
+                    <button class="btn btn-secondary btn-sm" (click)="openLigneEdit(l)">Éditer</button>
+                  </td>
+                }
               </tr>
             }
           </tbody>
         </table>
+      </div>
+    }
+
+    @if (editingLigne(); as lg) {
+      <div class="modal-overlay" (click)="closeLigneEdit()" style="z-index:1200">
+        <div class="modal" (click)="$event.stopPropagation()" style="max-width:520px">
+          <h2>Modifier la ligne</h2>
+          <form [formGroup]="ligneForm" (ngSubmit)="submitLigne()">
+            <div class="form-group">
+              <label>Article</label>
+              <input [value]="lg.article.reference + ' – ' + lg.article.libelle" disabled>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 120px;gap:16px">
+              <div class="form-group" style="margin:0 0 16px">
+                <label>Emplacement *</label>
+                <select formControlName="emplacementId"
+                        [class.invalid]="ligneForm.get('emplacementId')!.invalid && ligneForm.get('emplacementId')!.touched">
+                  <option value="">— Emplacement —</option>
+                  @for (e of emplacements(); track e.id) {
+                    <option [value]="e.id">{{ e.code }}</option>
+                  }
+                </select>
+              </div>
+              <div class="form-group" style="margin:0 0 16px">
+                <label>Quantité *</label>
+                <input type="number" formControlName="quantite" min="1"
+                       [class.invalid]="ligneForm.get('quantite')!.invalid && ligneForm.get('quantite')!.touched">
+              </div>
+            </div>
+            @if (lg.article.gestionDlc) {
+              <div class="form-group">
+                <label>DLC <span style="color:#ef4444">*</span></label>
+                <input type="date" formControlName="dlc">
+              </div>
+            }
+            @if (lg.article.gestionNumeroSerie) {
+              <div class="form-group">
+                <label>N° série <span style="color:#ef4444">*</span></label>
+                <input type="text" formControlName="numeroSerie" placeholder="N° série">
+              </div>
+            }
+            @if (ligneFormError()) {
+              <div class="alert-error">{{ ligneFormError() }}</div>
+            }
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="closeLigneEdit()">Annuler</button>
+              <button type="submit" class="btn btn-primary" [disabled]="ligneForm.invalid || savingLigne()">
+                {{ savingLigne() ? 'Enregistrement…' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     }
 
