@@ -136,7 +136,7 @@
     }
 
     @if (editingLigne(); as lg) {
-      <div class="modal-overlay" (click)="closeLigneEdit()" style="z-index:1200">
+      <div class="modal-overlay" (click)="tryCloseLigneEdit()" style="z-index:1200">
         <div class="modal" (click)="$event.stopPropagation()" style="max-width:520px">
           <h2>Modifier la ligne</h2>
           <form [formGroup]="ligneForm" (ngSubmit)="submitLigne()">
@@ -177,7 +177,7 @@
               <div class="alert-error">{{ ligneFormError() }}</div>
             }
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="closeLigneEdit()">Annuler</button>
+              <button type="button" class="btn btn-secondary" (click)="tryCloseLigneEdit()">Annuler</button>
               <button type="submit" class="btn btn-primary" [disabled]="ligneForm.invalid || savingLigne()">
                 {{ savingLigne() ? 'Enregistrement…' : 'Enregistrer' }}
               </button>
@@ -196,6 +196,17 @@
         [loading]="confirmLoading()"
         (confirmed)="onConfirmAccept()"
         (cancelled)="onConfirmCancel()" />
+    }
+
+    @if (pendingClose()) {
+      <app-confirm-dialog
+        title="Abandonner la saisie ?"
+        message="Les informations saisies n'ont pas été enregistrées et seront perdues."
+        confirmLabel="Abandonner"
+        cancelLabel="Continuer la saisie"
+        variant="danger"
+        (confirmed)="confirmDiscard()"
+        (cancelled)="cancelDiscard()" />
     }
 
     <style>

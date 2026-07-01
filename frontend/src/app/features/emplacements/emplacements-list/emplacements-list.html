@@ -56,7 +56,7 @@
     </div>
 
     @if (showForm()) {
-      <div class="modal-overlay" (click)="closeForm()">
+      <div class="modal-overlay" (click)="tryCloseForm()">
         <div class="modal" (click)="$event.stopPropagation()">
           <h2>{{ editing() ? 'Modifier l\'emplacement' : 'Nouvel emplacement' }}</h2>
           <form [formGroup]="form" (ngSubmit)="submit()">
@@ -86,7 +86,7 @@
               <div class="alert-error">{{ formError() }}</div>
             }
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+              <button type="button" class="btn btn-secondary" (click)="tryCloseForm()">Annuler</button>
               <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
                 {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
               </button>
@@ -97,7 +97,7 @@
     }
 
     @if (showTypeForm()) {
-      <div class="modal-overlay" (click)="closeTypeForm()" style="z-index:1200">
+      <div class="modal-overlay" (click)="tryCloseTypeForm()" style="z-index:1200">
         <div class="modal" (click)="$event.stopPropagation()">
           <h2>Nouveau type d'emplacement</h2>
           <form [formGroup]="typeForm" (ngSubmit)="submitType()">
@@ -110,7 +110,7 @@
               <div class="alert-error">{{ typeFormError() }}</div>
             }
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="closeTypeForm()">Annuler</button>
+              <button type="button" class="btn btn-secondary" (click)="tryCloseTypeForm()">Annuler</button>
               <button type="submit" class="btn btn-primary" [disabled]="typeForm.invalid || saving()">
                 {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
               </button>
@@ -118,4 +118,15 @@
           </form>
         </div>
       </div>
+    }
+
+    @if (pendingClose()) {
+      <app-confirm-dialog
+        title="Abandonner la saisie ?"
+        message="Les informations saisies n'ont pas été enregistrées et seront perdues."
+        confirmLabel="Abandonner"
+        cancelLabel="Continuer la saisie"
+        variant="danger"
+        (confirmed)="confirmDiscard()"
+        (cancelled)="cancelDiscard()" />
     }

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TypeEmplacementService } from '../../../core/services/type-emplacement.service';
 import { TypeEmplacement } from '../../../core/models/type-emplacement.model';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-types-emplacement-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmDialogComponent],
   templateUrl: './types-emplacement-list.html'
 })
 export class TypesEmplacementListComponent implements OnInit {
@@ -55,6 +56,12 @@ export class TypesEmplacementListComponent implements OnInit {
     this.form.reset();
     this.editing.set(null);
   }
+
+  // Garde d'abandon de saisie : demande confirmation si le formulaire a été modifié.
+  pendingClose = signal<(() => void) | null>(null);
+  tryCloseForm() { if (this.form.dirty) { this.pendingClose.set(() => this.closeForm()); } else { this.closeForm(); } }
+  confirmDiscard() { const close = this.pendingClose(); this.pendingClose.set(null); close?.(); }
+  cancelDiscard()  { this.pendingClose.set(null); }
 
   submit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }

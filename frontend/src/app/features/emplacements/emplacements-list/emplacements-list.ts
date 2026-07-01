@@ -6,11 +6,12 @@ import { EmplacementService } from '../../../core/services/emplacement.service';
 import { TypeEmplacementService } from '../../../core/services/type-emplacement.service';
 import { Emplacement } from '../../../core/models/emplacement.model';
 import { TypeEmplacement } from '../../../core/models/type-emplacement.model';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-emplacements-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmDialogComponent],
   templateUrl: './emplacements-list.html'
 })
 export class EmplacementsListComponent implements OnInit {
@@ -98,6 +99,13 @@ export class EmplacementsListComponent implements OnInit {
 
   openTypeForm() { this.typeFormError.set(''); this.typeForm.reset(); this.showTypeForm.set(true); }
   closeTypeForm() { this.showTypeForm.set(false); this.saving.set(false); this.typeForm.reset(); }
+
+  // Garde d'abandon de saisie : demande confirmation si un formulaire a été modifié.
+  pendingClose = signal<(() => void) | null>(null);
+  tryCloseForm()     { if (this.form.dirty)     { this.pendingClose.set(() => this.closeForm()); }     else { this.closeForm(); } }
+  tryCloseTypeForm() { if (this.typeForm.dirty) { this.pendingClose.set(() => this.closeTypeForm()); } else { this.closeTypeForm(); } }
+  confirmDiscard() { const close = this.pendingClose(); this.pendingClose.set(null); close?.(); }
+  cancelDiscard()  { this.pendingClose.set(null); }
 
   submitType() {
     if (this.typeForm.invalid) { this.typeForm.markAllAsTouched(); return; }
