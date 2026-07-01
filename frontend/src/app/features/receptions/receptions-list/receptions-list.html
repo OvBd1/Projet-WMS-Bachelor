@@ -82,12 +82,15 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
               <div class="form-group" style="margin:0">
                 <label>Fournisseur / Tiers</label>
-                <select formControlName="tiersId">
-                  <option value="">— Aucun tiers —</option>
-                  @for (t of tiers(); track t.id) {
-                    <option [value]="t.id">{{ t.nom }} ({{ t.type }})</option>
-                  }
-                </select>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <select formControlName="tiersId" style="flex:1">
+                    <option value="">— Aucun tiers —</option>
+                    @for (t of tiers(); track t.id) {
+                      <option [value]="t.id">{{ t.nom }} ({{ t.type }})</option>
+                    }
+                  </select>
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="openTiersForm()">+ Tiers</button>
+                </div>
               </div>
               <div class="form-group" style="margin:0">
                 <label>Date de réception</label>
@@ -166,6 +169,54 @@
               <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
               <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
                 {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    @if (showTiersForm()) {
+      <div class="modal-overlay" (click)="closeTiersForm()" style="z-index:1200">
+        <div class="modal" (click)="$event.stopPropagation()" style="max-width:520px">
+          <h2>Nouveau tiers</h2>
+          <form [formGroup]="tiersForm" (ngSubmit)="submitTiers()">
+            <div style="display:grid;grid-template-columns:1fr 180px;gap:16px">
+              <div class="form-group" style="margin:0 0 16px">
+                <label>Nom *</label>
+                <input formControlName="nom" placeholder="Nom du tiers" maxlength="255"
+                       [class.invalid]="tiersForm.get('nom')!.invalid && tiersForm.get('nom')!.touched">
+              </div>
+              <div class="form-group" style="margin:0 0 16px">
+                <label>Type *</label>
+                <select formControlName="type">
+                  <option value="FOURNISSEUR">Fournisseur</option>
+                  <option value="CLIENT">Client</option>
+                  <option value="AUTRE">Autre</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" formControlName="email" placeholder="contact@exemple.com" maxlength="255"
+                     [class.invalid]="tiersForm.get('email')!.invalid && tiersForm.get('email')!.touched">
+            </div>
+            <div class="form-group">
+              <label>Téléphone</label>
+              <input formControlName="telephone" placeholder="+33 6 12 34 56 78" maxlength="30"
+                     [class.invalid]="tiersForm.get('telephone')!.invalid && tiersForm.get('telephone')!.touched">
+            </div>
+            <div class="form-group">
+              <label>Adresse</label>
+              <textarea formControlName="adresse" placeholder="Adresse (optionnelle)" rows="2"></textarea>
+            </div>
+            @if (tiersFormError()) {
+              <div class="alert-error">{{ tiersFormError() }}</div>
+            }
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="closeTiersForm()">Annuler</button>
+              <button type="submit" class="btn btn-primary" [disabled]="tiersForm.invalid || savingTiers()">
+                {{ savingTiers() ? 'Enregistrement…' : 'Enregistrer' }}
               </button>
             </div>
           </form>
