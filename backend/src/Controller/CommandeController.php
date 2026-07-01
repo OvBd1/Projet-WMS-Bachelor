@@ -47,6 +47,8 @@ class CommandeController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
 
         $dto = new CommandeDTO();
+        $dto->tiersId        = isset($data['tiersId']) ? (int)$data['tiersId'] : null;
+        $dto->dateExpedition = $data['dateExpedition'] ?? null;
         $dto->lignes = array_map(function (array $l): LigneCommandeDTO {
             $ligne           = new LigneCommandeDTO();
             $ligne->articleId = (int)($l['articleId'] ?? 0);

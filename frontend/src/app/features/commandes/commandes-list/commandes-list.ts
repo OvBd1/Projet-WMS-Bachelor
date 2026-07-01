@@ -1,10 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { CommandeService } from '../../../core/services/commande.service';
 import { ArticleService } from '../../../core/services/article.service';
+import { TiersService } from '../../../core/services/tiers.service';
 import { Commande, StatutCommande } from '../../../core/models/commande.model';
 import { Article } from '../../../core/models/article.model';
+import { Tiers } from '../../../core/models/tiers.model';
 
 const STATUTS: StatutCommande[] = ['EN_ATTENTE', 'PREPAREE', 'EXPEDIEE', 'ANNULEE'];
 
@@ -24,6 +27,7 @@ const BADGE: Record<StatutCommande, string> = {
 export class CommandesListComponent implements OnInit {
   commandes       = signal<Commande[]>([]);
   articles        = signal<Article[]>([]);
+  tiers           = signal<Tiers[]>([]);
   loading         = signal(false);
   error           = signal('');
   formError       = signal('');
@@ -37,9 +41,14 @@ export class CommandesListComponent implements OnInit {
   constructor(
     private commandeService: CommandeService,
     private articleService: ArticleService,
+    private tiersService: TiersService,
     private fb: FormBuilder
   ) {
-    this.form = this.fb.group({ lignes: this.fb.array([]) });
+    this.form = this.fb.group({
+      tiersId:        [''],
+      dateExpedition: [''],
+      lignes:         this.fb.array([])
+    });
   }
 
   get lignes(): FormArray { return this.form.get('lignes') as FormArray; }
@@ -64,11 +73,15 @@ export class CommandesListComponent implements OnInit {
 
   openCreate() {
     this.formError.set('');
+    this.form.patchValue({ tiersId: '', dateExpedition: '' });
     this.lignes.clear();
     this.addLigne();
-    this.articleService.getAll().subscribe({
-      next:  data => { this.articles.set(data); this.showForm.set(true); },
-      error: () => this.error.set('Impossible de charger les articles.')
+    forkJoin({
+      articles: this.articleService.getAll(),
+      tiers:    this.tiersService.getAll()
+    }).subscribe({
+      next:  ({ articles, tiers }) => { this.articles.set(articles); this.tiers.set(tiers); this.showForm.set(true); },
+      error: () => this.error.set('Impossible de charger les données du formulaire.')
     });
   }
 
@@ -82,8 +95,13 @@ export class CommandesListComponent implements OnInit {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.saving.set(true);
     this.formError.set('');
-    const lignes = this.lignes.value.map((l: any) => ({ articleId: +l.articleId, quantite: +l.quantite }));
-    this.commandeService.create(lignes).subscribe({
+    const v = this.form.value;
+    const payload = {
+      tiersId:        v.tiersId ? +v.tiersId : null,
+      dateExpedition: v.dateExpedition || null,
+      lignes:         this.lignes.value.map((l: any) => ({ articleId: +l.articleId, quantite: +l.quantite }))
+    };
+    this.commandeService.create(payload).subscribe({
       next:  () => { this.load(); this.closeForm(); },
       error: err => { this.formError.set(err.error?.message ?? 'Erreur lors de l\'enregistrement.'); this.saving.set(false); }
     });
