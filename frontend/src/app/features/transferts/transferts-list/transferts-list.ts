@@ -8,11 +8,12 @@ import { EmplacementService } from '../../../core/services/emplacement.service';
 import { Transfert } from '../../../core/models/transfert.model';
 import { Article } from '../../../core/models/article.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-transferts-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmDialogComponent],
   templateUrl: './transferts-list.html'
 })
 export class TransfertsListComponent implements OnInit {
@@ -61,6 +62,12 @@ export class TransfertsListComponent implements OnInit {
   }
 
   closeForm() { this.showForm.set(false); this.saving.set(false); this.form.reset({ quantite: 1 }); }
+
+  // Garde d'abandon de saisie : demande confirmation si le formulaire a été modifié.
+  pendingClose = signal<(() => void) | null>(null);
+  tryCloseForm() { if (this.form.dirty) { this.pendingClose.set(() => this.closeForm()); } else { this.closeForm(); } }
+  confirmDiscard() { const close = this.pendingClose(); this.pendingClose.set(null); close?.(); }
+  cancelDiscard()  { this.pendingClose.set(null); }
 
   submit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }

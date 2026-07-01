@@ -128,6 +128,13 @@ export class ReceptionsListComponent implements OnInit {
     this.tiersForm.reset({ nom: '', type: 'FOURNISSEUR', email: '', telephone: '', adresse: '' });
   }
 
+  // Garde d'abandon de saisie : demande confirmation si un formulaire a été modifié.
+  pendingClose = signal<(() => void) | null>(null);
+  tryCloseForm()      { if (this.form.dirty)      { this.pendingClose.set(() => this.closeForm()); }      else { this.closeForm(); } }
+  tryCloseTiersForm() { if (this.tiersForm.dirty) { this.pendingClose.set(() => this.closeTiersForm()); } else { this.closeTiersForm(); } }
+  confirmDiscard() { const close = this.pendingClose(); this.pendingClose.set(null); close?.(); }
+  cancelDiscard()  { this.pendingClose.set(null); }
+
   submitTiers() {
     if (this.tiersForm.invalid) { this.tiersForm.markAllAsTouched(); return; }
     this.savingTiers.set(true);

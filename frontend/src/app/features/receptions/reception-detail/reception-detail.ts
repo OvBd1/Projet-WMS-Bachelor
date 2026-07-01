@@ -87,6 +87,12 @@ export class ReceptionDetailComponent implements OnInit {
     this.ligneForm.reset({ emplacementId: '', quantite: 1, dlc: '', numeroSerie: '' });
   }
 
+  // Garde d'abandon de saisie : demande confirmation si le formulaire a été modifié.
+  pendingClose = signal<(() => void) | null>(null);
+  tryCloseLigneEdit() { if (this.ligneForm.dirty) { this.pendingClose.set(() => this.closeLigneEdit()); } else { this.closeLigneEdit(); } }
+  confirmDiscard() { const close = this.pendingClose(); this.pendingClose.set(null); close?.(); }
+  cancelDiscard()  { this.pendingClose.set(null); }
+
   submitLigne() {
     const ligne = this.editingLigne();
     const reception = this.reception();

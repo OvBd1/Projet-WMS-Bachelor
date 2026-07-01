@@ -78,7 +78,7 @@
     </div>
 
     @if (showForm()) {
-      <div class="modal-overlay" (click)="closeForm()">
+      <div class="modal-overlay" (click)="tryCloseForm()">
         <div class="modal" style="max-width:560px" (click)="$event.stopPropagation()">
           <h2>{{ editing() ? 'Modifier l\'article' : 'Nouvel article' }}</h2>
           <form [formGroup]="form" (ngSubmit)="submit()">
@@ -146,7 +146,7 @@
             }
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+              <button type="button" class="btn btn-secondary" (click)="tryCloseForm()">Annuler</button>
               <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
                 {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
               </button>
@@ -157,7 +157,7 @@
     }
 
     @if (showTypeForm()) {
-      <div class="modal-overlay" (click)="closeTypeForm()" style="z-index:1200">
+      <div class="modal-overlay" (click)="tryCloseTypeForm()" style="z-index:1200">
         <div class="modal" (click)="$event.stopPropagation()">
           <h2>Nouveau type de conditionnement</h2>
           <form [formGroup]="typeForm" (ngSubmit)="submitType()">
@@ -170,7 +170,7 @@
               <div class="alert-error">{{ typeFormError() }}</div>
             }
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="closeTypeForm()">Annuler</button>
+              <button type="button" class="btn btn-secondary" (click)="tryCloseTypeForm()">Annuler</button>
               <button type="submit" class="btn btn-primary" [disabled]="typeForm.invalid || savingType()">
                 {{ savingType() ? 'Enregistrement…' : 'Enregistrer' }}
               </button>
@@ -186,4 +186,15 @@
              style="max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.4)"
              (click)="$event.stopPropagation()">
       </div>
+    }
+
+    @if (pendingClose()) {
+      <app-confirm-dialog
+        title="Abandonner la saisie ?"
+        message="Les informations saisies n'ont pas été enregistrées et seront perdues."
+        confirmLabel="Abandonner"
+        cancelLabel="Continuer la saisie"
+        variant="danger"
+        (confirmed)="confirmDiscard()"
+        (cancelled)="cancelDiscard()" />
     }

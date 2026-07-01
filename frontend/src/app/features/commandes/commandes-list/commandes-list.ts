@@ -8,6 +8,7 @@ import { TiersService } from '../../../core/services/tiers.service';
 import { Commande, StatutCommande } from '../../../core/models/commande.model';
 import { Article } from '../../../core/models/article.model';
 import { Tiers } from '../../../core/models/tiers.model';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog';
 
 const STATUTS: StatutCommande[] = ['EN_ATTENTE', 'PREPAREE', 'EXPEDIEE', 'ANNULEE'];
 
@@ -21,7 +22,7 @@ const BADGE: Record<StatutCommande, string> = {
 @Component({
   selector: 'app-commandes-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmDialogComponent],
   templateUrl: './commandes-list.html'
 })
 export class CommandesListComponent implements OnInit {
@@ -86,6 +87,12 @@ export class CommandesListComponent implements OnInit {
   }
 
   closeForm() { this.showForm.set(false); this.saving.set(false); }
+
+  // Garde d'abandon de saisie : demande confirmation si le formulaire a été modifié.
+  pendingClose = signal<(() => void) | null>(null);
+  tryCloseForm() { if (this.form.dirty) { this.pendingClose.set(() => this.closeForm()); } else { this.closeForm(); } }
+  confirmDiscard() { const close = this.pendingClose(); this.pendingClose.set(null); close?.(); }
+  cancelDiscard()  { this.pendingClose.set(null); }
 
   addLigne() { this.lignes.push(this.newLigne()); }
 

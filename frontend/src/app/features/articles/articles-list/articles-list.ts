@@ -6,11 +6,12 @@ import { TypeConditionnementService } from '../../../core/services/type-conditio
 import { Article } from '../../../core/models/article.model';
 import { TypeConditionnement } from '../../../core/models/type-conditionnement.model';
 import { environment } from '../../../../environments/environment';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-articles-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmDialogComponent],
   templateUrl: './articles-list.html',
   styles: [`
     .badge { display:inline-block; padding:0.2rem 0.55rem; border-radius:9999px; font-size:0.75rem; font-weight:600; }
@@ -113,6 +114,13 @@ export class ArticlesListComponent implements OnInit {
     this.savingType.set(false);
     this.typeForm.reset({ libelle: '' });
   }
+
+  // Garde d'abandon de saisie : demande confirmation si un formulaire a été modifié.
+  pendingClose = signal<(() => void) | null>(null);
+  tryCloseForm()     { if (this.form.dirty)     { this.pendingClose.set(() => this.closeForm()); }     else { this.closeForm(); } }
+  tryCloseTypeForm() { if (this.typeForm.dirty) { this.pendingClose.set(() => this.closeTypeForm()); } else { this.closeTypeForm(); } }
+  confirmDiscard() { const close = this.pendingClose(); this.pendingClose.set(null); close?.(); }
+  cancelDiscard()  { this.pendingClose.set(null); }
 
   submitType() {
     if (this.typeForm.invalid) { this.typeForm.markAllAsTouched(); return; }
