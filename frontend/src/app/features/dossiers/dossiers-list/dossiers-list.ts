@@ -5,11 +5,12 @@ import { DossierService } from '../../../core/services/dossier.service';
 import { Dossier } from '../../../core/models/dossier.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { IconComponent } from '../../../shared/icon/icon';
+import { AdresseAutocompleteComponent } from '../../../shared/adresse-autocomplete/adresse-autocomplete';
 
 @Component({
   selector: 'app-dossiers-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent, AdresseAutocompleteComponent],
   templateUrl: './dossiers-list.html',
   styleUrl: './dossiers-list.css'
 })

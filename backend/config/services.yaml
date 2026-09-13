@@ -18,3 +18,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # API tierce : Base Adresse Nationale (configurée par variables d'environnement)
+    App\Service\AdresseApiService:
+        arguments:
+            $baseUrl: '%env(ADRESSE_API_BASE_URL)%'
+            $timeout: '%env(float:ADRESSE_API_TIMEOUT)%'
