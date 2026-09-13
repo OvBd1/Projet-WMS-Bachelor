@@ -1,24 +1,51 @@
-FROM php:8.2-apache
+# syntax=docker/dockerfile:1
 
-RUN apt-get update && apt-get install -y \
-        git unzip libicu-dev libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql intl zip opcache \
-    && a2enmod rewrite \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# ---------- Base : PHP-FPM + extensions ----------
+FROM php:8.3-fpm-alpine AS base
 
-RUN printf "opcache.enable=1\nopcache.memory_consumption=128\nopcache.interned_strings_buffer=8\nopcache.max_accelerated_files=4000\nopcache.revalidate_freq=0\n" \
-    > /usr/local/etc/php/conf.d/opcache-prod.ini
+RUN apk add --no-cache \
+        git unzip \
+        icu-dev libzip-dev \
+        freetype-dev libjpeg-turbo-dev libpng-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql intl zip opcache gd \
+    && rm -rf /var/cache/apk/*
 
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY docker/vhost.conf /etc/apache2/sites-available/000-default.conf
+# Config PHP applicative (upload 8 Mo, opcache, etc.)
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 
 WORKDIR /var/www/html
 
+# ---------- Dépendances (couche cache) ----------
+FROM base AS vendor
+
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install \
+        --no-dev --no-scripts --no-progress \
+        --prefer-dist --no-interaction \
+    && composer clear-cache
+
+# ---------- Image finale ----------
+FROM base AS app
+
+# Vendor déjà installé
+COPY --from=vendor /var/www/html/vendor ./vendor
+
+# Code applicatif
 COPY . .
 
-RUN composer install --optimize-autoloader --no-interaction --no-scripts \
-    && mkdir -p var/cache var/log public/uploads/articles \
-    && chown -R www-data:www-data var public/uploads
+# Autoload optimisé + dossiers runtime
+RUN composer dump-autoload --no-dev --classmap-authoritative \
+    && mkdir -p var/cache var/log public/uploads/articles config/jwt \
+    && chown -R www-data:www-data var public/uploads config/jwt
 
-EXPOSE 80
+# Entrypoint (normalise les fins de ligne au cas où le fichier vient de Windows)
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint \
+    && chmod +x /usr/local/bin/entrypoint
+
+ENTRYPOINT ["entrypoint"]
+CMD ["php-fpm"]

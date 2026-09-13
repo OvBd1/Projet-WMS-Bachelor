@@ -20,7 +20,7 @@ final class Version20260806094039 extends AbstractMigration
         $this->addSql('ALTER TABLE dossier ADD CONSTRAINT FK_3D48E037B03A8386 FOREIGN KEY (created_by_id) REFERENCES utilisateur (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE dossier ADD CONSTRAINT FK_3D48E037896DBBDE FOREIGN KEY (updated_by_id) REFERENCES utilisateur (id) ON DELETE SET NULL');
 
-        $this->addSql("INSERT INTO dossier (code, raison_sociale, created_at, created_by_id) VALUES ('DOS1', 'Entreprise par defaut', NOW(), 1)");
+        $this->addSql("INSERT INTO dossier (code, raison_sociale, created_at, created_by_id) VALUES ('DOS1', 'Entreprise par defaut', NOW(), NULL)");
 
         $this->addSql('DROP INDEX UNIQ_23A0E66AEA34913 ON article');
         $this->addSql('ALTER TABLE article ADD dossier_id INT DEFAULT NULL');

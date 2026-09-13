@@ -12,6 +12,7 @@ export interface CommandePayload {
   lignes: LigneCommandePayload[];
   dateCommande?: string | null;
   tiersId?: number | null;
+  dateExpedition?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

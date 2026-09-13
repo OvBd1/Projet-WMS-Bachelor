@@ -35,6 +35,13 @@ class CommandeService
             $commande->setTiers($tiers);
         }
 
+        if ($dto->dateExpedition) {
+            $date = \DateTime::createFromFormat('Y-m-d', $dto->dateExpedition);
+            if ($date) {
+                $commande->setDateExpedition($date);
+            }
+        }
+
         foreach ($dto->lignes as $ligneDto) {
             $article = $this->articleRepo->find($ligneDto->articleId);
             if (!$article) {
@@ -46,7 +53,13 @@ class CommandeService
             $commande->addLigneCommande($ligne);
         }
 
+        // Numéro provisoire pour respecter la contrainte NOT NULL/unique au premier flush,
+        // puis remplacé par un numéro lisible basé sur l'id généré.
+        $commande->setNumeroCommande('TMP-' . uniqid());
         $this->em->persist($commande);
+        $this->em->flush();
+
+        $commande->setNumeroCommande('CMD-' . str_pad((string)$commande->getId(), 5, '0', STR_PAD_LEFT));
         $this->em->flush();
 
         return $commande;
@@ -114,10 +127,12 @@ class CommandeService
     public function normalize(Commande $c): array
     {
         return [
-            'id'           => $c->getId(),
-            'dateCommande' => $c->getDateCommande()?->format('Y-m-d H:i:s'),
-            'statut'       => $c->getStatut(),
-            'tiers'        => $c->getTiers() ? [
+            'id'             => $c->getId(),
+            'numeroCommande' => $c->getNumeroCommande(),
+            'dateCommande'   => $c->getDateCommande()?->format('Y-m-d H:i:s'),
+            'dateExpedition' => $c->getDateExpedition()?->format('Y-m-d'),
+            'statut'         => $c->getStatut(),
+            'tiers'          => $c->getTiers() ? [
                 'id'   => $c->getTiers()->getId(),
                 'code' => $c->getTiers()->getCode(),
                 'nom'  => $c->getTiers()->getNom(),
@@ -142,10 +157,12 @@ class CommandeService
     public function normalizeList(Commande $c): array
     {
         return [
-            'id'           => $c->getId(),
-            'dateCommande' => $c->getDateCommande()?->format('Y-m-d H:i:s'),
-            'statut'       => $c->getStatut(),
-            'tiers'        => $c->getTiers() ? [
+            'id'             => $c->getId(),
+            'numeroCommande' => $c->getNumeroCommande(),
+            'dateCommande'   => $c->getDateCommande()?->format('Y-m-d H:i:s'),
+            'dateExpedition' => $c->getDateExpedition()?->format('Y-m-d'),
+            'statut'         => $c->getStatut(),
+            'tiers'          => $c->getTiers() ? [
                 'id'   => $c->getTiers()->getId(),
                 'nom'  => $c->getTiers()->getNom(),
                 'type' => $c->getTiers()->getType(),

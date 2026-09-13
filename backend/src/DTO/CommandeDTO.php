@@ -10,6 +10,8 @@ class CommandeDTO
 
     public ?int $tiersId = null;
 
+    public ?string $dateExpedition = null;
+
     /** @var LigneCommandeDTO[] */
     #[Assert\NotBlank]
     #[Assert\Count(min: 1)]

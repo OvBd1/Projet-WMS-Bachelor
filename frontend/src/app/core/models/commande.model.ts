@@ -8,9 +8,11 @@ export interface LigneCommande {
 
 export interface Commande {
   id: number;
+  numeroCommande: string;
   dateCommande: string;
+  dateExpedition: string | null;
   statut: StatutCommande;
-  tiers: { id: number; nom: string; type: string } | null;
+  tiers: { id: number; code?: string; nom: string; type: string } | null;
   utilisateur: { id: number; email: string };
   lignes?: LigneCommande[];
   nbLignes?: number;

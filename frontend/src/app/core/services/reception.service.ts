@@ -17,6 +17,13 @@ export interface ReceptionPayload {
   dateReception?: string | null;
 }
 
+export interface LigneReceptionUpdatePayload {
+  emplacementId: number;
+  quantite: number;
+  dlc?: string | null;
+  numeroSerie?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReceptionService {
   private url = `${environment.apiUrl}/receptions`;
@@ -37,6 +44,10 @@ export class ReceptionService {
 
   update(id: number, payload: ReceptionPayload) {
     return this.http.put<Reception>(`${this.url}/${id}`, payload);
+  }
+
+  updateLigne(receptionId: number, ligneId: number, payload: LigneReceptionUpdatePayload) {
+    return this.http.patch<Reception>(`${this.url}/${receptionId}/lignes/${ligneId}`, payload);
   }
 
   valider(id: number) {
