@@ -1,7 +1,8 @@
 security:
     password_hashers:
+        # Argon2id explicite (« auto » retient bcrypt). Les anciens hachages restent vérifiables.
         App\Entity\Utilisateur:
-            algorithm: auto
+            algorithm: argon2id
 
     providers:
         app_user_provider:
