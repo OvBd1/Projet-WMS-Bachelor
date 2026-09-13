@@ -99,29 +99,28 @@ docker compose down -v
 
 ## Connexion / compte admin
 
-Un utilisateur se crée via `POST /api/auth/register`
-(`email`, `password` min. 6 caractères, `role` = `ROLE_USER` ou `ROLE_ADMIN`) :
+Il n'y a **pas d'inscription publique** : seul un administrateur connecté peut
+créer des comptes (page *Utilisateurs*, ou `POST /api/utilisateurs`).
+
+### Premier administrateur
+
+Sur une installation neuve, créer le premier administrateur en ligne de commande
+(le mot de passe est demandé en saisie masquée, 6 caractères minimum) :
 
 ```powershell
-curl -X POST http://localhost:8080/api/auth/register `
-  -H "Content-Type: application/json" `
-  --% -d "{\"email\":\"admin@logitrack.test\",\"password\":\"admin1234\",\"role\":\"ROLE_ADMIN\"}"
+docker compose exec php php bin/console app:create-admin admin@logitrack.test Admin LogiTrack
 ```
+
+> Le compte est stocké dans le volume `db_data`. Après un reset (`down -v`),
+> relancer la commande pour le recréer.
+
+### Autres comptes
+
+Une fois connecté en administrateur, créer les comptes depuis la page
+*Utilisateurs*. Un utilisateur non administrateur doit être rattaché à un dossier.
 
 Le login (`POST /api/auth/login`, champs `email` + `password`) renvoie
 `{ "token": "..." }` (JWT).
-
-### Compte admin déjà créé
-
-| Champ | Valeur |
-|-------|--------|
-| Email | `admin@logitrack.test` |
-| Mot de passe | `admin1234` |
-| Rôle | `ROLE_ADMIN` |
-
-> Ce compte est stocké dans le volume `db_data`. Il persiste tant que tu ne fais
-> pas `docker compose down -v`. Après un reset (`down -v`), relance la commande
-> `register` ci-dessus pour le recréer.
 
 ## Dépannage
 
