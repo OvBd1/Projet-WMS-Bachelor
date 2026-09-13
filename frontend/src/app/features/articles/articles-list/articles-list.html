@@ -96,7 +96,10 @@
         </div>
 
         <div class="form-group">
-          <label>Type de conditionnement</label>
+          <div class="label-row">
+            <label>Type de conditionnement</label>
+            <button type="button" class="btn-link" (click)="openTypeForm()">+ Nouveau type</button>
+          </div>
           <select formControlName="typeConditionnementId">
             <option [ngValue]="null">— Aucun —</option>
             @for (tc of typesConditionnement(); track tc.id) {
@@ -141,6 +144,30 @@
           <button type="button" class="btn btn-secondary" (click)="cancelForm()">Annuler</button>
           <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
             {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showTypeForm()) {
+  <div class="modal-overlay" (click)="cancelTypeForm()">
+    <div class="modal" style="max-width:420px" (click)="$event.stopPropagation()">
+      <h2>Nouveau type de conditionnement</h2>
+      <form [formGroup]="typeForm" (ngSubmit)="submitType()">
+        <div class="form-group">
+          <label>Libellé *</label>
+          <input formControlName="libelle" placeholder="Carton, Palette, Unité…" maxlength="100"
+                 [class.invalid]="typeForm.get('libelle')!.invalid && typeForm.get('libelle')!.touched">
+        </div>
+        @if (typeFormError()) {
+          <div class="alert-error">{{ typeFormError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancelTypeForm()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="typeForm.invalid || savingType()">
+            {{ savingType() ? 'Enregistrement…' : 'Créer' }}
           </button>
         </div>
       </form>

@@ -31,6 +31,12 @@ export class ArticlesListComponent implements OnInit {
   selectedFile: File | null = null;
   form: FormGroup;
 
+  // Création rapide d'un type de conditionnement depuis le formulaire article
+  showTypeForm         = signal(false);
+  savingType           = signal(false);
+  typeFormError        = signal('');
+  typeForm: FormGroup;
+
   private readonly apiBase = environment.apiUrl.replace('/api', '');
 
   constructor(
@@ -45,6 +51,9 @@ export class ArticlesListComponent implements OnInit {
       gestionDlc:            [false],
       gestionNumeroSerie:    [false],
       typeConditionnementId: [null],
+    });
+    this.typeForm = this.fb.group({
+      libelle: ['', [Validators.required, Validators.maxLength(100)]]
     });
   }
 
@@ -85,6 +94,34 @@ export class ArticlesListComponent implements OnInit {
       typeConditionnementId: a.typeConditionnement?.id ?? null,
     });
     this.showForm.set(true);
+  }
+
+  openTypeForm() {
+    this.typeFormError.set('');
+    this.typeForm.reset({ libelle: '' });
+    this.showTypeForm.set(true);
+  }
+
+  async cancelTypeForm() {
+    if (await this.confirm.confirmDiscard(this.typeForm)) this.closeTypeForm();
+  }
+
+  closeTypeForm() { this.showTypeForm.set(false); this.savingType.set(false); }
+
+  submitType() {
+    if (this.typeForm.invalid) { this.typeForm.markAllAsTouched(); return; }
+    this.savingType.set(true);
+    this.typeFormError.set('');
+    this.typeCondService.create({ libelle: this.typeForm.value.libelle.trim() }).subscribe({
+      next: created => {
+        // Ajoute le type à la liste et le sélectionne dans le formulaire article.
+        this.typesConditionnement.update(list => [...list, created]);
+        this.form.patchValue({ typeConditionnementId: created.id });
+        this.form.markAsDirty();
+        this.closeTypeForm();
+      },
+      error: err => { this.typeFormError.set(err.error?.message ?? 'Erreur lors de la création du type.'); this.savingType.set(false); }
+    });
   }
 
   async cancelForm() {
