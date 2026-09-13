@@ -154,7 +154,7 @@ class CommandeService
                     'reference' => $l->getArticle()->getReference(),
                     'libelle'   => $l->getArticle()->getLibelle(),
                 ],
-            ], $c->getLignesCommande()->toArray()),
+            ], array_values($c->getLignesCommande()->toArray())), // clés réindexées : tableau JSON même après retrait de lignes
         ];
     }
 

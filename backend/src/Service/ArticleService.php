@@ -100,7 +100,7 @@ class ArticleService
                     'id'   => $s->getEmplacement()->getId(),
                     'code' => $s->getEmplacement()->getCode(),
                 ],
-            ], $a->getStocks()->toArray());
+            ], array_values($a->getStocks()->toArray()));
         }
 
         return $data;
