@@ -117,12 +117,13 @@ final class StockServiceTest extends TestCase
         self::assertSame(3, $stock->getQuantite(), 'La quantité ne doit pas être modifiée.');
     }
 
-    public function testRefuseUneSortieSurUnStockInexistant(): void
+    public function testRefuseUneSortieSurUnStockInexistantSansCreerDeStock(): void
     {
         $this->repo->method('findOneBy')->willReturn(null);
-        $this->dossierContext->method('getCurrentOrThrow')->willReturn((new Dossier())->setCode('D1')->setRaisonSociale('D1'));
+        $this->dossierContext->expects(self::never())->method('getCurrentOrThrow');
+        $this->em->expects(self::never())->method('persist');
 
-        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('disponible: 0, demandé: 1');
 
         $this->service->adjust($this->article(), $this->emplacement(), -1);
     }
