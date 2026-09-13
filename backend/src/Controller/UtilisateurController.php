@@ -20,19 +20,10 @@ class UtilisateurController extends AbstractController
         private ValidatorInterface $validator
     ) {}
 
-    #[Route('/auth/register', name: 'auth_register', methods: ['POST'])]
-    public function register(Request $request): JsonResponse
-    {
-        return $this->doCreate($request);
-    }
-
+    // Création de compte réservée aux administrateurs (access_control ^/api/utilisateurs).
+    // Le premier administrateur se crée avec la commande app:create-admin.
     #[Route('/utilisateurs', name: 'utilisateurs_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
-    {
-        return $this->doCreate($request);
-    }
-
-    private function doCreate(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
 
