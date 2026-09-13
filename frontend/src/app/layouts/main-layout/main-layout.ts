@@ -4,11 +4,13 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { DossierService } from '../../core/services/dossier.service';
 import { DossierContextService } from '../../core/services/dossier-context.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Dossier } from '../../core/models/dossier.model';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ConfirmDialogComponent],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss'
 })
@@ -22,6 +24,7 @@ export class MainLayoutComponent implements OnInit {
   constructor(
     public auth: AuthService,
     public dossierContext: DossierContextService,
+    public confirm: ConfirmService,
     private dossierService: DossierService,
     private router: Router
   ) {
