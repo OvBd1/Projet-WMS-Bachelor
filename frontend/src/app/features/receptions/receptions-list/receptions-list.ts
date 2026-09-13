@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,6 +11,7 @@ import { Reception } from '../../../core/models/reception.model';
 import { Article } from '../../../core/models/article.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
 import { Tiers } from '../../../core/models/tiers.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-receptions-list',
@@ -20,6 +21,8 @@ import { Tiers } from '../../../core/models/tiers.model';
   styleUrl: './receptions-list.css'
 })
 export class ReceptionsListComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   receptions   = signal<Reception[]>([]);
   articles     = signal<Article[]>([]);
   emplacements = signal<Emplacement[]>([]);
@@ -155,27 +158,44 @@ export class ReceptionsListComponent implements OnInit {
     });
   }
 
-  valider(r: Reception) {
-    if (!confirm(`Valider la réception #${r.id} ? Le stock sera mis à jour.`)) return;
+  async valider(r: Reception) {
+    const ok = await this.confirm.ask({
+      title: 'Valider la réception',
+      message: `Valider la réception #${r.id} ? Le stock sera mis à jour.`,
+      confirmLabel: 'Valider',
+      variant: 'success'
+    });
+    if (!ok) return;
     this.receptionService.valider(r.id).subscribe({
       next:  () => this.load(),
       error: err => this.error.set(err.error?.message ?? 'Validation impossible.')
     });
   }
 
-  annuler(r: Reception) {
-    const msg = r.statut === 'VALIDEE'
-      ? `Annuler la réception #${r.id} VALIDÉE ? Le stock sera décrémenté en conséquence.`
-      : `Annuler la réception #${r.id} ?`;
-    if (!confirm(msg)) return;
+  async annuler(r: Reception) {
+    const ok = await this.confirm.ask({
+      title: 'Annuler la réception',
+      message: r.statut === 'VALIDEE'
+        ? `Annuler la réception #${r.id} VALIDÉE ? Le stock sera décrémenté en conséquence.`
+        : `Annuler la réception #${r.id} ?`,
+      confirmLabel: 'Annuler la réception',
+      variant: 'warning'
+    });
+    if (!ok) return;
     this.receptionService.annuler(r.id).subscribe({
       next:  () => this.load(),
       error: err => this.error.set(err.error?.message ?? 'Annulation impossible.')
     });
   }
 
-  delete(r: Reception) {
-    if (!confirm(`Supprimer la réception #${r.id} ?`)) return;
+  async delete(r: Reception) {
+    const ok = await this.confirm.ask({
+      title: 'Supprimer la réception',
+      message: `Supprimer la réception #${r.id} ? Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.receptionService.delete(r.id).subscribe({
       next:  () => this.load(),
       error: err => this.error.set(err.error?.message ?? 'Suppression impossible.')

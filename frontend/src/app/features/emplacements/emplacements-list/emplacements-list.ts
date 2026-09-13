@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -6,6 +6,7 @@ import { EmplacementService } from '../../../core/services/emplacement.service';
 import { TypeEmplacementService } from '../../../core/services/type-emplacement.service';
 import { Emplacement } from '../../../core/models/emplacement.model';
 import { TypeEmplacement } from '../../../core/models/type-emplacement.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-emplacements-list',
@@ -14,6 +15,8 @@ import { TypeEmplacement } from '../../../core/models/type-emplacement.model';
   templateUrl: './emplacements-list.html'
 })
 export class EmplacementsListComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   emplacements  = signal<Emplacement[]>([]);
   types         = signal<TypeEmplacement[]>([]);
   loading       = signal(false);
@@ -88,8 +91,14 @@ export class EmplacementsListComponent implements OnInit {
     });
   }
 
-  delete(e: Emplacement) {
-    if (!confirm(`Supprimer l'emplacement "${e.code}" ?`)) return;
+  async delete(e: Emplacement) {
+    const ok = await this.confirm.ask({
+      title: 'Supprimer l\'emplacement',
+      message: `Supprimer l'emplacement "${e.code}" ? Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.emplacementService.delete(e.id).subscribe({
       next:  () => this.load(),
       error: () => this.error.set('Suppression impossible (emplacement utilisé dans des stocks ou réceptions).')

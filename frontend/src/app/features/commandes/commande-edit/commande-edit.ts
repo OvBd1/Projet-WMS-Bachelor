@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -9,6 +9,7 @@ import { TiersService } from '../../../core/services/tiers.service';
 import { Commande, StatutCommande } from '../../../core/models/commande.model';
 import { Article } from '../../../core/models/article.model';
 import { Tiers } from '../../../core/models/tiers.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface LineItem {
   _idx: number;
@@ -33,6 +34,8 @@ const BADGE: Record<StatutCommande, string> = {
   styleUrl: './commande-edit.css'
 })
 export class CommandeEditComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   commande  = signal<Commande | null>(null);
   loading   = signal(true);
   saving    = signal(false);
@@ -123,8 +126,14 @@ export class CommandeEditComponent implements OnInit {
     });
   }
 
-  delete() {
-    if (!confirm(`Supprimer la commande #${this.commande()!.id} ?`)) return;
+  async delete() {
+    const ok = await this.confirm.ask({
+      title: 'Supprimer la commande',
+      message: `Supprimer la commande #${this.commande()!.id} ? Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.commandeService.delete(this.commande()!.id).subscribe({
       next:  () => this.router.navigate(['/commandes']),
       error: () => this.error.set('Suppression impossible.')
@@ -169,8 +178,14 @@ export class CommandeEditComponent implements OnInit {
     this.closeLigneModal();
   }
 
-  removeLigne(line: LineItem) {
-    if (!confirm('Supprimer cette ligne ?')) return;
+  async removeLigne(line: LineItem) {
+    const ok = await this.confirm.ask({
+      title: 'Retirer la ligne',
+      message: `Retirer la ligne ${line.articleReference} de la commande ? Elle sera supprimée à l'enregistrement.`,
+      confirmLabel: 'Retirer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.lines.update(ls => ls.filter(l => l._idx !== line._idx));
   }
 

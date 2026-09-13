@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReceptionService } from '../../../core/services/reception.service';
 import { Reception } from '../../../core/models/reception.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-reception-detail',
@@ -12,6 +13,8 @@ import { Reception } from '../../../core/models/reception.model';
   styleUrl: './reception-detail.css'
 })
 export class ReceptionDetailComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   reception = signal<Reception | null>(null);
   loading   = signal(true);
   error     = signal('');
@@ -30,19 +33,30 @@ export class ReceptionDetailComponent implements OnInit {
     });
   }
 
-  valider() {
-    if (!confirm('Valider la réception ? Le stock sera mis à jour.')) return;
+  async valider() {
+    const ok = await this.confirm.ask({
+      title: 'Valider la réception',
+      message: 'Valider la réception ? Le stock sera mis à jour.',
+      confirmLabel: 'Valider',
+      variant: 'success'
+    });
+    if (!ok) return;
     this.receptionService.valider(this.reception()!.id).subscribe({
       next:  data => this.reception.set(data),
       error: err  => this.error.set(err.error?.message ?? 'Validation impossible.')
     });
   }
 
-  annuler() {
-    const msg = this.reception()!.statut === 'VALIDEE'
-      ? 'Annuler cette réception VALIDÉE ? Le stock sera décrémenté en conséquence.'
-      : 'Annuler cette réception ?';
-    if (!confirm(msg)) return;
+  async annuler() {
+    const ok = await this.confirm.ask({
+      title: 'Annuler la réception',
+      message: this.reception()!.statut === 'VALIDEE'
+        ? 'Annuler cette réception VALIDÉE ? Le stock sera décrémenté en conséquence.'
+        : 'Annuler cette réception ?',
+      confirmLabel: 'Annuler la réception',
+      variant: 'warning'
+    });
+    if (!ok) return;
     this.receptionService.annuler(this.reception()!.id).subscribe({
       next:  data => this.reception.set(data),
       error: err  => this.error.set(err.error?.message ?? 'Annulation impossible.')
@@ -55,8 +69,14 @@ export class ReceptionDetailComponent implements OnInit {
          :                           'badge badge-danger';
   }
 
-  delete() {
-    if (!confirm('Supprimer cette réception ?')) return;
+  async delete() {
+    const ok = await this.confirm.ask({
+      title: 'Supprimer la réception',
+      message: 'Supprimer cette réception ? Cette action est irréversible.',
+      confirmLabel: 'Supprimer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.receptionService.delete(this.reception()!.id).subscribe({
       next:  () => this.router.navigate(['/receptions']),
       error: err => this.error.set(err.error?.message ?? 'Suppression impossible.')

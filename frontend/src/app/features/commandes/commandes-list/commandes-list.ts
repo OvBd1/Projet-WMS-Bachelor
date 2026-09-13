@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -9,6 +9,7 @@ import { TiersService } from '../../../core/services/tiers.service';
 import { Commande, StatutCommande } from '../../../core/models/commande.model';
 import { Article } from '../../../core/models/article.model';
 import { Tiers } from '../../../core/models/tiers.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 const STATUTS: StatutCommande[] = ['EN_ATTENTE', 'PREPAREE', 'EXPEDIEE', 'ANNULEE'];
 
@@ -27,6 +28,8 @@ const BADGE: Record<StatutCommande, string> = {
   styleUrl: './commandes-list.css'
 })
 export class CommandesListComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   commandes       = signal<Commande[]>([]);
   articles        = signal<Article[]>([]);
   tiers           = signal<Tiers[]>([]);
@@ -133,8 +136,14 @@ export class CommandesListComponent implements OnInit {
     });
   }
 
-  delete(c: Commande) {
-    if (!confirm(`Supprimer la commande #${c.id} ?`)) return;
+  async delete(c: Commande) {
+    const ok = await this.confirm.ask({
+      title: 'Supprimer la commande',
+      message: `Supprimer la commande #${c.id} ? Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.commandeService.delete(c.id).subscribe({
       next:  () => this.load(),
       error: () => this.error.set('Suppression impossible.')

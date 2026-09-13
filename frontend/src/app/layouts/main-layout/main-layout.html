@@ -160,4 +160,14 @@
   <main class="content">
     <router-outlet />
   </main>
+
+  @if (confirm.request(); as c) {
+    <app-confirm-dialog
+      [title]="c.title"
+      [message]="c.message"
+      [confirmLabel]="c.confirmLabel"
+      [variant]="c.variant"
+      (confirmed)="confirm.answer(true)"
+      (cancelled)="confirm.answer(false)" />
+  }
 </div>

@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TiersService } from '../../../core/services/tiers.service';
 import { Tiers } from '../../../core/models/tiers.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 const TYPES = ['FOURNISSEUR', 'CLIENT', 'AUTRE'] as const;
 
@@ -14,6 +15,8 @@ const TYPES = ['FOURNISSEUR', 'CLIENT', 'AUTRE'] as const;
   styleUrl: './tiers-list.css'
 })
 export class TiersListComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   tiers       = signal<Tiers[]>([]);
   loading     = signal(false);
   error       = signal('');
@@ -103,8 +106,14 @@ export class TiersListComponent implements OnInit {
     });
   }
 
-  delete(t: Tiers) {
-    if (!confirm(`Supprimer le tiers "${t.nom}" ?`)) return;
+  async delete(t: Tiers) {
+    const ok = await this.confirm.ask({
+      title: 'Supprimer le tiers',
+      message: `Supprimer le tiers "${t.nom}" ? Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.tiersService.delete(t.id).subscribe({
       next:  () => this.load(),
       error: () => this.error.set('Suppression impossible (tiers utilisé dans des commandes ou réceptions).')

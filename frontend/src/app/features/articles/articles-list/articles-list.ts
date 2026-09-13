@@ -1,10 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ArticleService } from '../../../core/services/article.service';
 import { TypeConditionnementService } from '../../../core/services/type-conditionnement.service';
 import { Article } from '../../../core/models/article.model';
 import { TypeConditionnement } from '../../../core/models/type-conditionnement.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -15,6 +16,8 @@ import { environment } from '../../../../environments/environment';
   styleUrl: './articles-list.css'
 })
 export class ArticlesListComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   articles             = signal<Article[]>([]);
   typesConditionnement = signal<TypeConditionnement[]>([]);
   loading              = signal(false);
@@ -138,8 +141,14 @@ export class ArticlesListComponent implements OnInit {
     });
   }
 
-  delete(a: Article) {
-    if (!confirm(`Supprimer l'article "${a.libelle}" ?`)) return;
+  async delete(a: Article) {
+    const ok = await this.confirm.ask({
+      title: 'Supprimer l\'article',
+      message: `Supprimer l'article "${a.libelle}" ? Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.articleService.delete(a.id).subscribe({
       next:  () => this.load(),
       error: () => this.error.set('Suppression impossible (article lié à des stocks ou commandes).')

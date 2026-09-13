@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -11,6 +11,7 @@ import { Reception } from '../../../core/models/reception.model';
 import { Article } from '../../../core/models/article.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
 import { Tiers } from '../../../core/models/tiers.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface LineItem {
   _idx: number;
@@ -34,6 +35,8 @@ interface LineItem {
   styleUrl: './reception-edit.css'
 })
 export class ReceptionEditComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   reception    = signal<Reception | null>(null);
   loading      = signal(true);
   saving       = signal(false);
@@ -188,8 +191,14 @@ export class ReceptionEditComponent implements OnInit {
     this.closeLigneModal();
   }
 
-  removeLigne(line: LineItem) {
-    if (!confirm('Supprimer cette ligne ?')) return;
+  async removeLigne(line: LineItem) {
+    const ok = await this.confirm.ask({
+      title: 'Retirer la ligne',
+      message: `Retirer la ligne ${line.articleReference} de la réception ? Elle sera supprimée à l'enregistrement.`,
+      confirmLabel: 'Retirer',
+      variant: 'danger'
+    });
+    if (!ok) return;
     this.lines.update(ls => ls.filter(l => l._idx !== line._idx));
   }
 
