@@ -1,0 +1,148 @@
+name: CI
+
+# À chaque poussée, sur toutes les branches, et sur les pull requests vers main / develop.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Back-end (Symfony)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      # Base « wms » pour les migrations ; Doctrine ajoute « _test » en environnement de test.
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/wms?serverVersion=8.0&charset=utf8mb4
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, intl, sodium, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+
+      - name: composer.json et composer.lock cohérents
+        run: composer validate --no-check-publish
+
+      - name: Dépendances
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Clés JWT éphémères
+        run: php bin/console lexik:jwt:generate-keypair --no-interaction
+
+      - name: Conteneur de services
+        run: php bin/console lint:container
+
+      - name: Mapping Doctrine
+        run: php bin/console doctrine:schema:validate --skip-sync
+
+      - name: Migrations sur base vierge
+        run: |
+          php bin/console doctrine:database:create --no-interaction
+          php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+
+      - name: Schéma issu des migrations identique au mapping
+        run: php bin/console doctrine:schema:validate
+
+      - name: Tests unitaires
+        run: php bin/phpunit --testsuite unit
+
+      - name: Base de test
+        run: php bin/console doctrine:database:create --env=test --if-not-exists --no-interaction
+
+      - name: Tests fonctionnels
+        run: php bin/phpunit --testsuite functional
+
+  frontend:
+    name: Front-end (Angular)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Dépendances
+        run: npm ci
+
+      - name: Tests unitaires (Vitest)
+        run: npx ng test --watch=false
+
+      - name: Build de production
+        run: npx ng build
+
+  docker:
+    name: Images Docker
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Configuration Compose valide
+        run: |
+          cp .env.example .env
+          docker compose -f docker-compose.yml config --quiet
+
+      - name: Image back-end
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          target: app
+          push: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Image front-end
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
