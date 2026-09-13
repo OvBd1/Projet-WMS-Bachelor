@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { AbstractControl } from '@angular/forms';
 
 export type ConfirmVariant = 'primary' | 'danger' | 'success' | 'warning';
 
@@ -30,6 +31,20 @@ export class ConfirmService {
     return new Promise(resolve =>
       this.current.set({ confirmLabel: 'Confirmer', variant: 'primary', ...options, resolve })
     );
+  }
+
+  /**
+   * Garde d'abandon de saisie : ne demande confirmation que si le formulaire a été modifié.
+   * Renvoie true si la fermeture peut avoir lieu.
+   */
+  confirmDiscard(form: AbstractControl): Promise<boolean> {
+    if (!form.dirty) return Promise.resolve(true);
+    return this.ask({
+      title: 'Abandonner la saisie',
+      message: 'Les modifications non enregistrées seront perdues. Fermer quand même ?',
+      confirmLabel: 'Abandonner',
+      variant: 'warning'
+    });
   }
 
   answer(confirmed: boolean): void {

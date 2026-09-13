@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DossierService } from '../../../core/services/dossier.service';
 import { Dossier } from '../../../core/models/dossier.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-dossiers-list',
@@ -12,6 +13,8 @@ import { Dossier } from '../../../core/models/dossier.model';
   styleUrl: './dossiers-list.css'
 })
 export class DossiersListComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   dossiers        = signal<Dossier[]>([]);
   loading         = signal(false);
   error           = signal('');
@@ -62,6 +65,10 @@ export class DossiersListComponent implements OnInit {
       pays:          d.pays ?? ''
     });
     this.showForm.set(true);
+  }
+
+  async cancelForm() {
+    if (await this.confirm.confirmDiscard(this.form)) this.closeForm();
   }
 
   closeForm() { this.showForm.set(false); this.saving.set(false); }

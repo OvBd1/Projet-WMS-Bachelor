@@ -91,6 +91,10 @@ export class CommandesListComponent implements OnInit {
     });
   }
 
+  async cancelForm() {
+    if (await this.confirm.confirmDiscard(this.form)) this.closeForm();
+  }
+
   closeForm() { this.showForm.set(false); this.saving.set(false); }
 
   addLigne() { this.lignes.push(this.newLigne()); }

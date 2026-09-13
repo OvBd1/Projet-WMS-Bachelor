@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -8,6 +8,7 @@ import { EmplacementService } from '../../../core/services/emplacement.service';
 import { Transfert } from '../../../core/models/transfert.model';
 import { Article } from '../../../core/models/article.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-transferts-list',
@@ -16,6 +17,8 @@ import { Emplacement } from '../../../core/models/emplacement.model';
   templateUrl: './transferts-list.html'
 })
 export class TransfertsListComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   transferts   = signal<Transfert[]>([]);
   articles     = signal<Article[]>([]);
   emplacements = signal<Emplacement[]>([]);
@@ -58,6 +61,10 @@ export class TransfertsListComponent implements OnInit {
       next:  ({ articles, emplacements }) => { this.articles.set(articles); this.emplacements.set(emplacements); this.showForm.set(true); },
       error: () => this.error.set('Impossible de charger les données du formulaire.')
     });
+  }
+
+  async cancelForm() {
+    if (await this.confirm.confirmDiscard(this.form)) this.closeForm();
   }
 
   closeForm() { this.showForm.set(false); this.saving.set(false); this.form.reset({ quantite: 1 }); }

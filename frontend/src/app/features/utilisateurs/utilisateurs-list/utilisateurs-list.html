@@ -54,7 +54,7 @@
 </div>
 
 @if (showForm()) {
-  <div class="modal-overlay" (click)="closeForm()">
+  <div class="modal-overlay" (click)="cancelForm()">
     <div class="modal" (click)="$event.stopPropagation()" style="max-width:540px">
       <h2>Nouvel utilisateur</h2>
       <form [formGroup]="form" (ngSubmit)="submit()">
@@ -120,7 +120,7 @@
           <div class="alert-error">{{ formError() }}</div>
         }
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+          <button type="button" class="btn btn-secondary" (click)="cancelForm()">Annuler</button>
           <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
             {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
           </button>

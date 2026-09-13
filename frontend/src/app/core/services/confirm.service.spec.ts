@@ -1,3 +1,4 @@
+import { FormControl } from '@angular/forms';
 import { ConfirmService } from './confirm.service';
 
 describe('ConfirmService', () => {
@@ -44,5 +45,23 @@ describe('ConfirmService', () => {
 
     service.answer(true);
     await expect(second).resolves.toBe(true);
+  });
+
+  describe('confirmDiscard', () => {
+    it('autorise la fermeture sans question si le formulaire est intact', async () => {
+      await expect(service.confirmDiscard(new FormControl(''))).resolves.toBe(true);
+      expect(service.request()).toBeNull();
+    });
+
+    it('demande confirmation si le formulaire a été modifié', async () => {
+      const form = new FormControl('');
+      form.markAsDirty();
+
+      const answer = service.confirmDiscard(form);
+      expect(service.request()?.variant).toBe('warning');
+
+      service.answer(false);
+      await expect(answer).resolves.toBe(false);
+    });
   });
 });
