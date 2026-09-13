@@ -64,7 +64,10 @@
                  [class.invalid]="form.get('code')!.invalid && form.get('code')!.touched">
         </div>
         <div class="form-group">
-          <label>Type d'emplacement *</label>
+          <div class="label-row">
+            <label>Type d'emplacement *</label>
+            <button type="button" class="btn-link" (click)="openTypeForm()">+ Nouveau type</button>
+          </div>
           <select formControlName="typeEmplacementId"
                   [class.invalid]="form.get('typeEmplacementId')!.invalid && form.get('typeEmplacementId')!.touched">
             <option value="">— Choisir un type —</option>

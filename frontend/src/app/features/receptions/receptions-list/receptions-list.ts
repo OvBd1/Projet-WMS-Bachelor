@@ -35,6 +35,12 @@ export class ReceptionsListComponent implements OnInit {
   saving       = signal(false);
   form: FormGroup;
 
+  // Création rapide d'un tiers depuis le formulaire de réception
+  showTiersForm  = signal(false);
+  savingTiers    = signal(false);
+  tiersFormError = signal('');
+  tiersForm: FormGroup;
+
   private articleMap = new Map<number, Article>();
 
   constructor(
@@ -48,6 +54,11 @@ export class ReceptionsListComponent implements OnInit {
       tiersId:       [''],
       dateReception: [new Date().toISOString().split('T')[0]],
       lignes:        this.fb.array([])
+    });
+    this.tiersForm = this.fb.group({
+      code: ['', [Validators.required, Validators.maxLength(50)]],
+      nom:  ['', [Validators.required, Validators.maxLength(255)]],
+      type: ['FOURNISSEUR', Validators.required]
     });
   }
 
@@ -102,6 +113,41 @@ export class ReceptionsListComponent implements OnInit {
   }
 
   closeForm() { this.showForm.set(false); this.saving.set(false); }
+
+  openTiersForm() {
+    this.tiersFormError.set('');
+    this.tiersForm.reset({ code: '', nom: '', type: 'FOURNISSEUR' });
+    this.showTiersForm.set(true);
+  }
+
+  async cancelTiersForm() {
+    if (await this.confirm.confirmDiscard(this.tiersForm)) this.closeTiersForm();
+  }
+
+  closeTiersForm() { this.showTiersForm.set(false); this.savingTiers.set(false); }
+
+  submitTiers() {
+    if (this.tiersForm.invalid) { this.tiersForm.markAllAsTouched(); return; }
+    this.savingTiers.set(true);
+    this.tiersFormError.set('');
+    const v = this.tiersForm.value;
+    this.tiersService.create({ code: v.code.trim(), nom: v.nom.trim(), type: v.type }).subscribe({
+      next: created => {
+        // Ajoute le tiers à la liste et le sélectionne dans le formulaire de réception.
+        this.tiers.update(list => [...list, created]);
+        this.form.patchValue({ tiersId: String(created.id) });
+        this.form.markAsDirty();
+        this.closeTiersForm();
+      },
+      error: err => {
+        const msg = err.error?.errors
+          ? Object.values(err.error.errors).join(', ')
+          : (err.error?.message ?? 'Erreur lors de la création du tiers.');
+        this.tiersFormError.set(msg);
+        this.savingTiers.set(false);
+      }
+    });
+  }
 
   addLigne() { this.lignes.push(this.newLigne()); }
 
