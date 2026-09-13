@@ -19,3 +19,8 @@
 # Symfony default Docker Compose (conflicte avec docker-compose.yml racine)
 /compose.yaml
 /compose.override.yaml
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
