@@ -16,6 +16,14 @@ class StockService
         private DossierContext $dossierContext
     ) {}
 
+    /**
+     * Point de passage unique de tout mouvement de stock.
+     *
+     * Vérifie avant d'écrire : si la quantité résultante est négative, lève une DomainException
+     * avant toute modification (aucun stock créé, aucune quantité changée).
+     * Ne fait pas le flush : l'appelant décide de la transaction, ce qui permet de composer
+     * plusieurs mouvements (sortie + entrée d'un transfert).
+     */
     public function adjust(Article $article, Emplacement $emplacement, int $delta): Stock
     {
         $stock = $this->stockRepo->findOneBy([
@@ -23,22 +31,23 @@ class StockService
             'emplacement' => $emplacement,
         ]);
 
-        if (!$stock) {
-            $stock = new Stock();
-            $stock->setArticle($article)->setEmplacement($emplacement)->setQuantite(0);
-            $stock->setDossier($this->dossierContext->getCurrentOrThrow());
-            $this->em->persist($stock);
-        }
-
-        $newQty = $stock->getQuantite() + $delta;
+        $disponible = $stock?->getQuantite() ?? 0;
+        $newQty     = $disponible + $delta;
         if ($newQty < 0) {
             throw new \DomainException(sprintf(
                 'Stock insuffisant pour l\'article "%s" à l\'emplacement "%s" (disponible: %d, demandé: %d).',
                 $article->getReference(),
                 $emplacement->getCode(),
-                $stock->getQuantite(),
+                $disponible,
                 abs($delta)
             ));
+        }
+
+        if (!$stock) {
+            $stock = new Stock();
+            $stock->setArticle($article)->setEmplacement($emplacement);
+            $stock->setDossier($this->dossierContext->getCurrentOrThrow());
+            $this->em->persist($stock);
         }
 
         $stock->setQuantite($newQty);
