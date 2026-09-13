@@ -128,6 +128,23 @@ final class StockServiceTest extends TestCase
         $this->service->adjust($this->article(), $this->emplacement(), -1);
     }
 
+    public function testDeuxMouvementsSurUnMemeStockNouveauNeCreentQuUnSeulStock(): void
+    {
+        // Réception à plusieurs lignes pour le même article et le même emplacement :
+        // le stock créé par la première ligne n'est pas encore en base à la seconde.
+        $article     = $this->article();
+        $emplacement = $this->emplacement();
+        $this->repo->method('findOneBy')->willReturn(null);
+        $this->dossierContext->method('getCurrentOrThrow')->willReturn((new Dossier())->setCode('D1')->setRaisonSociale('D1'));
+        $this->em->expects(self::once())->method('persist');
+
+        $premier = $this->service->adjust($article, $emplacement, 1);
+        $second  = $this->service->adjust($article, $emplacement, 2);
+
+        self::assertSame($premier, $second);
+        self::assertSame(3, $second->getQuantite());
+    }
+
     public function testNeValideJamaisLaTransactionLuiMeme(): void
     {
         // L'appelant décide du flush : un transfert compose sortie + entrée dans une seule transaction.

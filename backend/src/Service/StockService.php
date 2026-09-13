@@ -10,6 +10,15 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class StockService
 {
+    /**
+     * Stocks créés pendant la requête et pas encore écrits en base (le flush appartient à l'appelant).
+     * Sans ce registre, deux mouvements sur un même couple article / emplacement nouveau
+     * (ex. une réception à plusieurs lignes) créeraient deux Stock et violeraient la contrainte unique.
+     *
+     * @var array<string, Stock>
+     */
+    private array $nouveauxStocks = [];
+
     public function __construct(
         private StockRepository $stockRepo,
         private EntityManagerInterface $em,
@@ -26,7 +35,8 @@ class StockService
      */
     public function adjust(Article $article, Emplacement $emplacement, int $delta): Stock
     {
-        $stock = $this->stockRepo->findOneBy([
+        $cle   = spl_object_id($article) . ':' . spl_object_id($emplacement);
+        $stock = $this->nouveauxStocks[$cle] ?? $this->stockRepo->findOneBy([
             'article'     => $article,
             'emplacement' => $emplacement,
         ]);
@@ -48,6 +58,7 @@ class StockService
             $stock->setArticle($article)->setEmplacement($emplacement);
             $stock->setDossier($this->dossierContext->getCurrentOrThrow());
             $this->em->persist($stock);
+            $this->nouveauxStocks[$cle] = $stock;
         }
 
         $stock->setQuantite($newQty);

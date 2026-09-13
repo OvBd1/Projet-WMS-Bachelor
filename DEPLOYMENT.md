@@ -211,7 +211,7 @@ La base de test `<MYSQL_DATABASE>_test` est créée, avec les droits du compte a
 `docker/mysql/initdb/01-base-de-test.sh` **à la création du volume `db_data`**.
 
 ```bash
-docker compose exec php vendor/bin/phpunit --testsuite unit          # 50 tests, sans base
+docker compose exec php vendor/bin/phpunit --testsuite unit          # 51 tests, sans base
 docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
 docker compose exec php vendor/bin/phpunit                           # unitaires + fonctionnels
 ```

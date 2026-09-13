@@ -56,6 +56,24 @@ final class ReceptionStockTest extends ApiTestCase
         self::assertSame(15, $this->stock(), 'Une seule ligne de stock par article et emplacement.');
     }
 
+    public function testPlusieursLignesPourLeMemeArticleEtLeMemeEmplacementSeCumulent(): void
+    {
+        // Cas réel : un article à numéro de série reçu en plusieurs lignes d'une unité.
+        $response = $this->api('POST', '/api/receptions', ['lignes' => [
+            ['articleId' => $this->articleId, 'emplacementId' => $this->emplacementId, 'quantite' => 1],
+            ['articleId' => $this->articleId, 'emplacementId' => $this->emplacementId, 'quantite' => 1],
+            ['articleId' => $this->articleId, 'emplacementId' => $this->emplacementId, 'quantite' => 3],
+        ]], $this->token, $this->dossierId);
+        self::assertSame(201, $response->getStatusCode(), (string) $response->getContent());
+        $id = $this->decode($response)['id'];
+
+        $validation = $this->api('PATCH', "/api/receptions/$id/valider", null, $this->token, $this->dossierId);
+
+        self::assertSame(200, $validation->getStatusCode(), (string) $validation->getContent());
+        self::assertSame(5, $this->stock());
+        self::assertCount(1, $this->decode($this->api('GET', '/api/stocks', null, $this->token, $this->dossierId)));
+    }
+
     public function testUneDoubleValidationEstRefuseeSansDoublerLeStock(): void
     {
         $id = $this->createReception($this->token, $this->dossierId, $this->articleId, $this->emplacementId, 10);
