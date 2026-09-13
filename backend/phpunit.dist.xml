@@ -15,6 +15,9 @@
         <ini name="error_reporting" value="-1" />
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
+        <!-- Aucun appel externe, même si l'environnement (ex. Docker Compose) définit l'URL réelle -->
+        <env name="ADRESSE_API_BASE_URL" value="http://127.0.0.1:9" force="true" />
+        <env name="ADRESSE_API_TIMEOUT" value="0.5" force="true" />
     </php>
 
     <testsuites>
