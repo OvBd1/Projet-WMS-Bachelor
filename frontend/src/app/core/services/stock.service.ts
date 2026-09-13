@@ -20,8 +20,4 @@ export class StockService {
   getByEmplacement(emplacementId: number) {
     return this.http.get<Stock[]>(`${this.url}/emplacement/${emplacementId}`);
   }
-
-  patch(id: number, quantite: number) {
-    return this.http.patch<Stock>(`${this.url}/${id}`, { quantite });
-  }
 }

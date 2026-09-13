@@ -46,13 +46,6 @@ class StockService
         return $stock;
     }
 
-    public function setQuantite(Stock $stock, int $quantite): Stock
-    {
-        $stock->setQuantite($quantite);
-        $this->em->flush();
-        return $stock;
-    }
-
     public function normalize(Stock $s): array
     {
         return [

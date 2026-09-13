@@ -1,15 +1,19 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { StockService } from '../../../core/services/stock.service';
 import { Stock } from '../../../core/models/stock.model';
-import { IconComponent } from '../../../shared/icon/icon';
 
+/**
+ * Consultation des stocks, en lecture seule.
+ *
+ * Le stock est une conséquence des mouvements (réceptions, transferts, commandes) :
+ * aucune quantité n'est saisie directement.
+ */
 @Component({
   selector: 'app-stocks-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './stocks-list.html'
 })
 export class StocksListComponent implements OnInit {
@@ -17,13 +21,9 @@ export class StocksListComponent implements OnInit {
   filtered  = signal<Stock[]>([]);
   loading   = signal(false);
   error     = signal('');
-  editingId = signal<number | null>(null);
   filterText = '';
-  qtyControl!: FormControl<number | null>;
 
-  constructor(private stockService: StockService, private fb: FormBuilder) {
-    this.qtyControl = this.fb.control(0, [Validators.required, Validators.min(0)]);
-  }
+  constructor(private stockService: StockService) {}
 
   ngOnInit() { this.load(); }
 
@@ -44,21 +44,5 @@ export class StocksListComponent implements OnInit {
           s.article.reference.toLowerCase().includes(q) ||
           s.emplacement.code.toLowerCase().includes(q))
       : [...this.stocks()]);
-  }
-
-  startEdit(s: Stock) {
-    this.editingId.set(s.id);
-    this.qtyControl.setValue(s.quantite);
-  }
-
-  cancelEdit() { this.editingId.set(null); }
-
-  saveQty(s: Stock) {
-    if (this.qtyControl.invalid) return;
-    const qty = this.qtyControl.value as number;
-    this.stockService.patch(s.id, qty).subscribe({
-      next:  updated => { s.quantite = updated.quantite; this.editingId.set(null); },
-      error: ()      => this.error.set('Erreur lors de la mise à jour du stock.')
-    });
   }
 }

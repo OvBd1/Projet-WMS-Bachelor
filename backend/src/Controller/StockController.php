@@ -2,17 +2,20 @@
 
 namespace App\Controller;
 
-use App\DTO\StockUpdateDTO;
 use App\Repository\ArticleRepository;
 use App\Repository\EmplacementRepository;
 use App\Repository\StockRepository;
 use App\Service\StockService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Consultation des stocks, en lecture seule.
+ *
+ * Aucune route n'écrit de quantité : le stock ne varie que par les mouvements
+ * (réceptions, transferts, commandes) via StockService::adjust().
+ */
 #[Route('/api/stocks', name: 'api_stocks_')]
 class StockController extends AbstractController
 {
@@ -20,8 +23,7 @@ class StockController extends AbstractController
         private StockService $service,
         private StockRepository $repo,
         private ArticleRepository $articleRepo,
-        private EmplacementRepository $emplacementRepo,
-        private ValidatorInterface $validator
+        private EmplacementRepository $emplacementRepo
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -54,31 +56,5 @@ class StockController extends AbstractController
 
         $stocks = $this->repo->findBy(['emplacement' => $emplacement]);
         return $this->json(array_map($this->service->normalize(...), $stocks));
-    }
-
-    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
-    public function update(int $id, Request $request): JsonResponse
-    {
-        $stock = $this->repo->find($id);
-        if (!$stock) {
-            return $this->json(['message' => 'Stock introuvable.'], 404);
-        }
-
-        $data = json_decode($request->getContent(), true) ?? [];
-        $dto  = new StockUpdateDTO();
-        $dto->quantite = (int)($data['quantite'] ?? -1);
-
-        $errors = $this->validator->validate($dto);
-        if (count($errors) > 0) {
-            $messages = [];
-            foreach ($errors as $e) {
-                $messages[$e->getPropertyPath()] = $e->getMessage();
-            }
-            return $this->json(['errors' => $messages], 422);
-        }
-
-        $this->service->setQuantite($stock, $dto->quantite);
-
-        return $this->json($this->service->normalize($stock));
     }
 }
