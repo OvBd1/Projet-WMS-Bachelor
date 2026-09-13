@@ -16,6 +16,8 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
+      # Exécuté à la création du volume : base de test « <MYSQL_DATABASE>_test » pour PHPUnit
+      - ./docker/mysql/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 5s
@@ -36,6 +38,9 @@ services:
       JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
       JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
       JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+      # API tierce : Base Adresse Nationale
+      ADRESSE_API_BASE_URL: ${ADRESSE_API_BASE_URL:-https://api-adresse.data.gouv.fr}
+      ADRESSE_API_TIMEOUT: ${ADRESSE_API_TIMEOUT:-3}
       # Utilisés par l'entrypoint pour attendre la base
       DB_HOST: db
       DB_PORT: "3306"
