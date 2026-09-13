@@ -80,7 +80,7 @@
 
         <div class="form-group">
           <label>Rue</label>
-          <input type="text" formControlName="rue" placeholder="N° et nom de rue">
+          <app-adresse-autocomplete [group]="form" />
         </div>
 
         <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:16px">

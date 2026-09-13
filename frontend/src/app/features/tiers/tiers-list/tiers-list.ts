@@ -5,13 +5,14 @@ import { TiersService } from '../../../core/services/tiers.service';
 import { Tiers } from '../../../core/models/tiers.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { IconComponent } from '../../../shared/icon/icon';
+import { AdresseAutocompleteComponent } from '../../../shared/adresse-autocomplete/adresse-autocomplete';
 
 const TYPES = ['FOURNISSEUR', 'CLIENT', 'AUTRE'] as const;
 
 @Component({
   selector: 'app-tiers-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent, AdresseAutocompleteComponent],
   templateUrl: './tiers-list.html',
   styleUrl: './tiers-list.css'
 })
