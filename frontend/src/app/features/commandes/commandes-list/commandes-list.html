@@ -25,8 +25,9 @@
     <table>
       <thead>
         <tr>
-          <th>#</th>
+          <th>Numéro</th>
           <th>Date</th>
+          <th>Expédition</th>
           <th>Statut</th>
           <th>Client / Tiers</th>
           <th>Utilisateur</th>
@@ -36,9 +37,16 @@
         @for (c of commandes(); track c.id) {
           <tr>
             <td>
-              <a [routerLink]="[c.id, 'edit']" style="font-weight:600;color:var(--primary)">#{{ c.id }}</a>
+              <a [routerLink]="[c.id, 'edit']" style="font-weight:600;color:var(--primary)">{{ c.numeroCommande }}</a>
             </td>
             <td>{{ c.dateCommande | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              @if (c.dateExpedition) {
+                {{ c.dateExpedition | date:'dd/MM/yyyy' }}
+              } @else {
+                <span style="color:#94a3b8">—</span>
+              }
+            </td>
             <td><span class="badge" [class]="badgeClass(c.statut)">{{ c.statut }}</span></td>
             <td>
               @if (c.tiers) {
@@ -62,14 +70,20 @@
       <h2>Nouvelle commande</h2>
       <form [formGroup]="form" (ngSubmit)="submit()">
 
-        <div class="form-group">
-          <label>Client / Tiers</label>
-          <select formControlName="tiersId">
-            <option value="">— Aucun tiers —</option>
-            @for (t of tiers(); track t.id) {
-              <option [value]="t.id">{{ t.nom }} ({{ t.type }})</option>
-            }
-          </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="form-group" style="margin:0">
+            <label>Client / Tiers</label>
+            <select formControlName="tiersId">
+              <option value="">— Aucun tiers —</option>
+              @for (t of tiers(); track t.id) {
+                <option [value]="t.id">{{ t.nom }} ({{ t.type }})</option>
+              }
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Date d'expédition</label>
+            <input type="date" formControlName="dateExpedition">
+          </div>
         </div>
 
         <div class="lignes-section" formArrayName="lignes">

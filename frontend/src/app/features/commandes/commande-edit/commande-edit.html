@@ -2,7 +2,7 @@
   <div style="display:flex;align-items:center;gap:12px">
     <a routerLink="/commandes" class="btn btn-secondary btn-sm">← Retour</a>
     <h1 style="margin:0">
-      Commande #{{ commande()?.id }}
+      Commande {{ commande()?.numeroCommande }}
       @if (commande()) {
         <span class="badge" [class]="badgeClass(commande()!.statut)" style="vertical-align:middle;margin-left:8px">{{ commande()!.statut }}</span>
       }
@@ -61,6 +61,10 @@
                 <option [value]="t.id">{{ t.nom }} ({{ t.type }})</option>
               }
             </select>
+          </div>
+          <div class="form-group">
+            <label>Date d'expédition</label>
+            <input type="date" formControlName="dateExpedition">
           </div>
         </form>
       </div>

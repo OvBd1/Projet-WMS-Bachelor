@@ -69,8 +69,9 @@ export class CommandeEditComponent implements OnInit {
     private fb:              FormBuilder
   ) {
     this.enteteForm = this.fb.group({
-      dateCommande: ['', Validators.required],
-      tiersId:      ['']
+      dateCommande:   ['', Validators.required],
+      dateExpedition: [''],
+      tiersId:        ['']
     });
     this.ligneForm = this.fb.group({
       articleId: ['', Validators.required],
@@ -92,8 +93,9 @@ export class CommandeEditComponent implements OnInit {
         articles.forEach(a => this.articleMap.set(a.id, a));
 
         this.enteteForm.patchValue({
-          dateCommande: commande.dateCommande ? commande.dateCommande.split(' ')[0] : '',
-          tiersId:      commande.tiers?.id ?? ''
+          dateCommande:   commande.dateCommande ? commande.dateCommande.split(' ')[0] : '',
+          dateExpedition: commande.dateExpedition ?? '',
+          tiersId:        commande.tiers?.id ?? ''
         });
 
         this.lines.set((commande.lignes ?? []).map(l => ({
@@ -130,7 +132,7 @@ export class CommandeEditComponent implements OnInit {
   async delete() {
     const ok = await this.confirm.ask({
       title: 'Supprimer la commande',
-      message: `Supprimer la commande #${this.commande()!.id} ? Cette action est irréversible.`,
+      message: `Supprimer la commande ${this.commande()!.numeroCommande} ? Cette action est irréversible.`,
       confirmLabel: 'Supprimer',
       variant: 'danger'
     });
@@ -211,8 +213,9 @@ export class CommandeEditComponent implements OnInit {
 
     const v = this.enteteForm.value;
     const payload: CommandePayload = {
-      dateCommande: v.dateCommande || null,
-      tiersId:      v.tiersId ? +v.tiersId : null,
+      dateCommande:   v.dateCommande || null,
+      dateExpedition: v.dateExpedition || null,
+      tiersId:        v.tiersId ? +v.tiersId : null,
       lignes:       this.lines().map(l => ({ articleId: l.articleId, quantite: l.quantite }))
     };
 
