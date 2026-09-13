@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { DossierService } from '../../../core/services/dossier.service';
 import { Dossier } from '../../../core/models/dossier.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 
 @Component({
   selector: 'app-dossiers-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   templateUrl: './dossiers-list.html',
   styleUrl: './dossiers-list.css'
 })

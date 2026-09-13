@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { TypeEmplacementService } from '../../../core/services/type-emplacement.service';
 import { TypeEmplacement } from '../../../core/models/type-emplacement.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 
 @Component({
   selector: 'app-types-emplacement-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   templateUrl: './types-emplacement-list.html'
 })
 export class TypesEmplacementListComponent implements OnInit {

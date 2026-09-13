@@ -10,6 +10,7 @@ import { Commande, StatutCommande } from '../../../core/models/commande.model';
 import { Article } from '../../../core/models/article.model';
 import { Tiers } from '../../../core/models/tiers.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 
 interface LineItem {
   _idx: number;
@@ -29,7 +30,7 @@ const BADGE: Record<StatutCommande, string> = {
 @Component({
   selector: 'app-commande-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent],
   templateUrl: './commande-edit.html',
   styleUrl: './commande-edit.css'
 })

@@ -111,8 +111,8 @@
                   </td>
                   <td>
                     <div style="display:flex;gap:4px">
-                      <button class="btn btn-edit btn-sm" (click)="openEditLigne(l)" title="Modifier">✎</button>
-                      <button class="btn btn-danger btn-sm" (click)="removeLigne(l)" title="Supprimer">✕</button>
+                      <button class="btn btn-edit btn-icon" (click)="openEditLigne(l)" title="Modifier" aria-label="Modifier la ligne"><app-icon name="edit" /></button>
+                      <button class="btn btn-danger btn-icon" (click)="removeLigne(l)" title="Supprimer" aria-label="Supprimer la ligne"><app-icon name="trash" /></button>
                     </div>
                   </td>
                 </tr>

@@ -4,11 +4,12 @@ import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angu
 import { FormsModule } from '@angular/forms';
 import { StockService } from '../../../core/services/stock.service';
 import { Stock } from '../../../core/models/stock.model';
+import { IconComponent } from '../../../shared/icon/icon';
 
 @Component({
   selector: 'app-stocks-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, IconComponent],
   templateUrl: './stocks-list.html'
 })
 export class StocksListComponent implements OnInit {

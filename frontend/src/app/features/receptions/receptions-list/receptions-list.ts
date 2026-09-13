@@ -12,11 +12,12 @@ import { Article } from '../../../core/models/article.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
 import { Tiers } from '../../../core/models/tiers.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 
 @Component({
   selector: 'app-receptions-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent],
   templateUrl: './receptions-list.html',
   styleUrl: './receptions-list.css'
 })

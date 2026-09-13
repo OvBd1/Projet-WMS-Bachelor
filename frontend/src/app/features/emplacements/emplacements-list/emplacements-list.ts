@@ -7,11 +7,12 @@ import { TypeEmplacementService } from '../../../core/services/type-emplacement.
 import { Emplacement } from '../../../core/models/emplacement.model';
 import { TypeEmplacement } from '../../../core/models/type-emplacement.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 
 @Component({
   selector: 'app-emplacements-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   templateUrl: './emplacements-list.html'
 })
 export class EmplacementsListComponent implements OnInit {
