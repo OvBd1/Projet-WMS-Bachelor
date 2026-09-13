@@ -95,8 +95,8 @@ frontend/src/app/
 
 | Niveau | Tests | Outil |
 |---|---|---|
-| Unitaires back-end | 50 | PHPUnit, doublures, sans base ni réseau |
-| Fonctionnels back-end | 32 | PHPUnit, requêtes HTTP réelles à travers le noyau, base de test reconstruite |
+| Unitaires back-end | 51 | PHPUnit, doublures, sans base ni réseau |
+| Fonctionnels back-end | 33 | PHPUnit, requêtes HTTP réelles à travers le noyau, base de test reconstruite |
 | Front-end | 43 | Vitest (services, intercepteurs, gardes, composants) |
 
 ```bash
