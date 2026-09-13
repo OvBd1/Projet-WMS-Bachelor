@@ -12,6 +12,7 @@ import { Article } from '../../../core/models/article.model';
 import { Emplacement } from '../../../core/models/emplacement.model';
 import { Tiers } from '../../../core/models/tiers.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 
 interface LineItem {
   _idx: number;
@@ -30,7 +31,7 @@ interface LineItem {
 @Component({
   selector: 'app-reception-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent],
   templateUrl: './reception-edit.html',
   styleUrl: './reception-edit.css'
 })

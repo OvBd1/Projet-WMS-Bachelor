@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { TypeConditionnementService } from '../../../core/services/type-conditionnement.service';
 import { TypeConditionnement } from '../../../core/models/type-conditionnement.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 
 @Component({
   selector: 'app-types-conditionnement-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   templateUrl: './types-conditionnement-list.html'
 })
 export class TypesConditionnementListComponent implements OnInit {

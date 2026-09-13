@@ -47,8 +47,8 @@
             </td>
             <td>
               <div class="btn-group">
-                <button class="btn btn-edit btn-sm" (click)="openEdit(t)">✎ Modifier</button>
-                <button class="btn btn-danger btn-sm" (click)="delete(t)">Suppr.</button>
+                <button class="btn btn-edit btn-icon" (click)="openEdit(t)" title="Modifier" aria-label="Modifier"><app-icon name="edit" /></button>
+                <button class="btn btn-danger btn-icon" (click)="delete(t)" title="Supprimer" aria-label="Supprimer"><app-icon name="trash" /></button>
               </div>
             </td>
           </tr>

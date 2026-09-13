@@ -10,6 +10,7 @@ import { Commande, StatutCommande } from '../../../core/models/commande.model';
 import { Article } from '../../../core/models/article.model';
 import { Tiers } from '../../../core/models/tiers.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 
 const STATUTS: StatutCommande[] = ['EN_ATTENTE', 'PREPAREE', 'EXPEDIEE', 'ANNULEE'];
 
@@ -23,7 +24,7 @@ const BADGE: Record<StatutCommande, string> = {
 @Component({
   selector: 'app-commandes-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent],
   templateUrl: './commandes-list.html',
   styleUrl: './commandes-list.css'
 })

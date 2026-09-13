@@ -95,10 +95,11 @@
                 <input type="number" formControlName="quantite" min="1"
                        [class.invalid]="lg.get('quantite')!.invalid && lg.get('quantite')!.touched">
               </div>
-              <button type="button" class="btn btn-danger btn-sm"
+              <button type="button" class="btn btn-danger btn-icon"
                       style="align-self:flex-end;margin-bottom:0"
                       [disabled]="lignes.length <= 1"
-                      (click)="removeLigne($index)">✕</button>
+                      title="Retirer la ligne" aria-label="Retirer la ligne"
+                      (click)="removeLigne($index)"><app-icon name="close" /></button>
             </div>
           }
         </div>

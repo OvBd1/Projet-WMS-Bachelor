@@ -6,12 +6,13 @@ import { TypeConditionnementService } from '../../../core/services/type-conditio
 import { Article } from '../../../core/models/article.model';
 import { TypeConditionnement } from '../../../core/models/type-conditionnement.model';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { IconComponent } from '../../../shared/icon/icon';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-articles-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   templateUrl: './articles-list.html',
   styleUrl: './articles-list.css'
 })

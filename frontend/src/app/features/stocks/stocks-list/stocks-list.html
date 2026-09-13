@@ -52,11 +52,11 @@
             <td>
               @if (editingId() === s.id) {
                 <div class="btn-group">
-                  <button class="btn btn-success btn-sm" (click)="saveQty(s)">✓</button>
-                  <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">✗</button>
+                  <button class="btn btn-success btn-icon" (click)="saveQty(s)" title="Enregistrer" aria-label="Enregistrer"><app-icon name="check" /></button>
+                  <button class="btn btn-secondary btn-icon" (click)="cancelEdit()" title="Annuler" aria-label="Annuler"><app-icon name="close" /></button>
                 </div>
               } @else {
-                <button class="btn btn-secondary btn-sm" (click)="startEdit(s)">Éditer</button>
+                <button class="btn btn-secondary btn-icon" (click)="startEdit(s)" title="Éditer" aria-label="Éditer"><app-icon name="edit" /></button>
               }
             </td>
           </tr>
