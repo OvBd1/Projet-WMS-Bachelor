@@ -78,6 +78,10 @@ class CommandeService
             }
         }
 
+        // PUT remplace l'en-tête : une date d'expédition absente la vide.
+        $dateExpedition = $dto->dateExpedition ? \DateTime::createFromFormat('Y-m-d', $dto->dateExpedition) : null;
+        $commande->setDateExpedition($dateExpedition ?: null);
+
         if ($dto->tiersId) {
             $tiers = $this->tiersRepo->find($dto->tiersId);
             if (!$tiers) {

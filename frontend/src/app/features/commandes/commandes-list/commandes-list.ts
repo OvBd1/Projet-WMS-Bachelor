@@ -50,7 +50,7 @@ export class CommandesListComponent implements OnInit {
     private tiersService: TiersService,
     private fb: FormBuilder
   ) {
-    this.form = this.fb.group({ tiersId: [''], lignes: this.fb.array([]) });
+    this.form = this.fb.group({ tiersId: [''], dateExpedition: [''], lignes: this.fb.array([]) });
   }
 
   get lignes(): FormArray { return this.form.get('lignes') as FormArray; }
@@ -77,7 +77,8 @@ export class CommandesListComponent implements OnInit {
     this.formError.set('');
     this.lignes.clear();
     this.addLigne();
-    this.form.patchValue({ tiersId: '' });
+    this.form.patchValue({ tiersId: '', dateExpedition: '' });
+    this.form.markAsPristine();
 
     forkJoin({
       articles: this.articleService.getAll(),
@@ -108,8 +109,9 @@ export class CommandesListComponent implements OnInit {
     this.formError.set('');
     const v = this.form.value;
     this.commandeService.create({
-      tiersId: v.tiersId ? +v.tiersId : null,
-      lignes:  this.lignes.value.map((l: any) => ({ articleId: +l.articleId, quantite: +l.quantite }))
+      tiersId:        v.tiersId ? +v.tiersId : null,
+      dateExpedition: v.dateExpedition || null,
+      lignes:         this.lignes.value.map((l: any) => ({ articleId: +l.articleId, quantite: +l.quantite }))
     }).subscribe({
       next:  () => { this.load(); this.closeForm(); },
       error: err => { this.formError.set(err.error?.message ?? 'Erreur lors de l\'enregistrement.'); this.saving.set(false); }
@@ -144,7 +146,7 @@ export class CommandesListComponent implements OnInit {
   async delete(c: Commande) {
     const ok = await this.confirm.ask({
       title: 'Supprimer la commande',
-      message: `Supprimer la commande #${c.id} ? Cette action est irréversible.`,
+      message: `Supprimer la commande ${c.numeroCommande} ? Cette action est irréversible.`,
       confirmLabel: 'Supprimer',
       variant: 'danger'
     });
