@@ -44,20 +44,12 @@ export class AdresseAutocompleteComponent implements OnInit {
 
   private adresseService = inject(AdresseService);
   private destroyRef = inject(DestroyRef);
-  // Évite de relancer une recherche quand la valeur vient d'une suggestion choisie.
-  private selecting = false;
 
   ngOnInit(): void {
     this.rue().valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      switchMap(value => {
-        if (this.selecting) {
-          this.selecting = false;
-          return [[] as AdresseSuggestion[]];
-        }
-        return this.adresseService.search(value ?? '');
-      }),
+      switchMap(value => this.adresseService.search(value ?? '')),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(list => {
       this.suggestions.set(list);
@@ -66,8 +58,8 @@ export class AdresseAutocompleteComponent implements OnInit {
   }
 
   select(s: AdresseSuggestion): void {
-    this.selecting = true;
-    this.group().patchValue({ rue: s.rue, codePostal: s.codePostal, ville: s.ville, pays: s.pays });
+    // Sans émission : choisir une suggestion ne relance pas de recherche.
+    this.group().patchValue({ rue: s.rue, codePostal: s.codePostal, ville: s.ville, pays: s.pays }, { emitEvent: false });
     this.group().markAsDirty();
     this.close();
   }
