@@ -237,7 +237,7 @@ class ReceptionService
                     'id'   => $l->getEmplacement()->getId(),
                     'code' => $l->getEmplacement()->getCode(),
                 ],
-            ], $r->getLignesReception()->toArray()),
+            ], array_values($r->getLignesReception()->toArray())), // clés réindexées : tableau JSON même après retrait de lignes
         ];
     }
 
