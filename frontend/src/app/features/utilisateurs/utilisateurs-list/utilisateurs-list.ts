@@ -1,10 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UtilisateurService } from '../../../core/services/utilisateur.service';
 import { DossierService } from '../../../core/services/dossier.service';
 import { User } from '../../../core/models/user.model';
 import { Dossier } from '../../../core/models/dossier.model';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-utilisateurs-list',
@@ -14,6 +15,8 @@ import { Dossier } from '../../../core/models/dossier.model';
   styleUrl: './utilisateurs-list.css'
 })
 export class UtilisateursListComponent implements OnInit {
+  private confirm = inject(ConfirmService);
+
   utilisateurs = signal<User[]>([]);
   dossiers     = signal<Dossier[]>([]);
   loading      = signal(false);
@@ -56,6 +59,10 @@ export class UtilisateursListComponent implements OnInit {
     this.formError.set('');
     this.form.reset({ role: 'ROLE_USER' });
     this.showForm.set(true);
+  }
+
+  async cancelForm() {
+    if (await this.confirm.confirmDiscard(this.form)) this.closeForm();
   }
 
   closeForm() { this.showForm.set(false); this.saving.set(false); }

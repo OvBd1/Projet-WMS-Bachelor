@@ -152,6 +152,10 @@ export class CommandeEditComponent implements OnInit {
     this.showLigneModal.set(true);
   }
 
+  async cancelLigneModal() {
+    if (await this.confirm.confirmDiscard(this.ligneForm)) this.closeLigneModal();
+  }
+
   closeLigneModal() { this.showLigneModal.set(false); }
 
   saveLigne() {

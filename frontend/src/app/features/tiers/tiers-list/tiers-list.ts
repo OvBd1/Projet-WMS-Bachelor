@@ -72,6 +72,10 @@ export class TiersListComponent implements OnInit {
     this.showForm.set(true);
   }
 
+  async cancelForm() {
+    if (await this.confirm.confirmDiscard(this.form)) this.closeForm();
+  }
+
   closeForm() { this.showForm.set(false); this.saving.set(false); }
 
   submit() {

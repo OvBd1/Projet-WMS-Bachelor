@@ -163,7 +163,7 @@
 }
 
 @if (showLigneModal()) {
-  <div class="modal-overlay" (click)="closeLigneModal()">
+  <div class="modal-overlay" (click)="cancelLigneModal()">
     <div class="modal" (click)="$event.stopPropagation()" style="max-width:440px">
       <h2>{{ editingLigneIdx() !== null ? 'Modifier la ligne' : 'Ajouter une ligne' }}</h2>
       <form [formGroup]="ligneForm" (ngSubmit)="saveLigne()">
@@ -186,7 +186,7 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeLigneModal()">Annuler</button>
+          <button type="button" class="btn btn-secondary" (click)="cancelLigneModal()">Annuler</button>
           <button type="submit" class="btn btn-primary">
             {{ editingLigneIdx() !== null ? 'Mettre à jour' : 'Ajouter' }}
           </button>

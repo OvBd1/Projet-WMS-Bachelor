@@ -73,6 +73,10 @@ export class EmplacementsListComponent implements OnInit {
     this.showForm.set(true);
   }
 
+  async cancelForm() {
+    if (await this.confirm.confirmDiscard(this.form)) this.closeForm();
+  }
+
   closeForm() { this.showForm.set(false); this.saving.set(false); this.form.reset(); this.editing.set(null); }
 
   submit() {
@@ -106,6 +110,10 @@ export class EmplacementsListComponent implements OnInit {
   }
 
   openTypeForm() { this.typeFormError.set(''); this.typeForm.reset(); this.showTypeForm.set(true); }
+  async cancelTypeForm() {
+    if (await this.confirm.confirmDiscard(this.typeForm)) this.closeTypeForm();
+  }
+
   closeTypeForm() { this.showTypeForm.set(false); this.saving.set(false); this.typeForm.reset(); }
 
   submitType() {
